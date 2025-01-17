@@ -44,10 +44,10 @@ export default function Auth() {
             <div className='flex h-full w-full items-center justify-center overflow-hidden bg-white'>
                 <div className='flex flex-col justify-center'>
                     <Typography variant='h2' className='p-base-x2 text-center font-medium text-gray-900'>
-                        Your Email Productivity Center. Never Leaving one page
+                        Your Email Productivity Center. Never Leaving One Page
                     </Typography>
                     <div className='mb-[111px] mt-[111px] flex max-w-[1005px] flex-wrap justify-center gap-base-x8'>
-                        {blocksInfo.map(block => (
+                        {blocksInfo.map((block, idx) => (
                             <section key={block.title} className='flex max-w-[312px] gap-3 py-[24px]'>
                                 <block.icon
                                     size={72}
@@ -57,7 +57,10 @@ export default function Auth() {
                                     <Typography variant='h4' className='text-sky-500'>
                                         {block.title}
                                     </Typography>
-                                    <Typography variant='body' className={cn('pr-6 text-base-body2 text-gray-900')}>
+                                    <Typography
+                                        variant='body'
+                                        className={cn('!text-base-body2 text-gray-900', { 'pr-6': idx === 0 })}
+                                    >
                                         {block.text}
                                     </Typography>
                                 </div>
@@ -67,7 +70,7 @@ export default function Auth() {
 
                     <div className='flex flex-col items-center gap-y-4'>
                         <LoginButton onSubmit={() => loginSync()} />
-                        <Typography variant='body' className='mb-[32px] text-base-body2 text-gray-500'>
+                        <Typography variant='body' className='mb-[32px] !text-base-body2 text-gray-500'>
                             Scive Pro for 30 days. No credit card needed.
                         </Typography>
                     </div>

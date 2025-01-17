@@ -153,6 +153,8 @@ const config: Config = {
                 'base-h3': '20px',
                 'base-h4': '16px',
                 'base-body': '16px',
+                'base-body-digest': '15px',
+                'base-body-digest1': '18px',
                 'base-body1': '14px',
                 'base-body2': '13px',
                 'base-body3': '12px',

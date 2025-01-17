@@ -3,6 +3,7 @@
 import { ElementType, PropsWithChildren } from 'react'
 
 import { useTextSize } from '@/shared/hooks'
+import { cn } from '@/shared/utils'
 
 import { ITypographyProps, TTextType, TVariant } from './Typography.types'
 
@@ -11,7 +12,6 @@ export function Typography({
     className,
     nowrap = false,
     children,
-    style,
     type,
     ...props
 }: PropsWithChildren<ITypographyProps>) {
@@ -41,9 +41,6 @@ export function Typography({
         'label-date-bold': 'text-base-body5 font-bold'
     }
 
-    
-    
-
     function isTTextType(value: string): value is TTextType {
         return /^(span|p|div|h1|h2|h3|h4)$/.test(value)
     }
@@ -51,19 +48,11 @@ export function Typography({
     const variantIsTag = isTTextType(variant)
 
     const fallback: TTextType = variantIsTag ? variant : 'span'
-
     const Component: ElementType = type || fallback
 
     return (
         <Component
-            className={`${variants[variant]} ${className}`}
-            style={{
-                ...style,
-                whiteSpace: nowrap ? 'nowrap' : 'normal',
-                overflow: nowrap ? 'hidden' : 'visible',
-                textOverflow: nowrap ? 'ellipsis' : 'clip',
-                transition: 'all 0.3s ease-out'
-            }}
+            className={cn(variants[variant], nowrap && 'overflow-hidden text-ellipsis whitespace-nowrap', className)}
             {...props}
         >
             {children}
