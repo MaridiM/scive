@@ -1,0 +1,17 @@
+export { default as avatarImage } from './avatar.png'
+
+// Icons
+export { default as googleImage } from './icons/google.svg'
+export { default as arrowLeftSVG } from './icons/arrow-left.svg'
+export { default as arrowRightSVG } from './icons/arrow-right.svg'
+export { default as importantSVG } from './icons/important.svg'
+export { default as logoSidebarDarkFullSVG } from './icons/logo-sidebar-dark-full.svg'
+export { default as logoSidebarDarkSVG } from './icons/logo-sidebar-dark.svg'
+export { default as logoSidebarHoverSVG } from './icons/logo-sidebar-hover.svg'
+export { default as logoSidebarInactiveSVG } from './icons/logo-sidebar-inactive.svg'
+export { default as logoSidebarSVG } from './icons/logo-sidebar.svg'
+export { default as sciveDarkSVG } from './icons/scive-dark.svg'
+export { default as sciveLightSVG } from './icons/scive-light.svg'
+export { default as themeDarkSVG } from './icons/theme-dark.svg'
+export { default as themeLightSVG } from './icons/theme-light.svg'
+export { default as checkSVG } from './icons/check.svg'
