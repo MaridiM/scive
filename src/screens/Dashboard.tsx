@@ -1,18 +1,21 @@
 'use client'
 
-import { CircleCheckBig, Mail, Wand2 } from 'lucide-react'
+import { CircleCheckBig, Wand2 } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
 
 import { Button, Typography } from '@/shared/components'
+import { paths } from '@/shared/config'
 import { useTextSize } from '@/shared/hooks'
-import { cn } from '@/shared/utils'
+import { cn, parseStringToList } from '@/shared/utils'
 
-import { DIGESTS, DIGEST_TAGS } from '@/enitites/api'
+import { DIGESTS, DIGEST_TAGS, MESSAGE_DETAILS } from '@/enitites/api'
+import { Header } from '@/features'
 
 export default function Dashboard() {
     const [readDigestItems, setRreadDigestItems] = useState<Array<string>>(['9555', '19548'])
-    const [readDigestItemIds, setReadDigestItemIds] = useState<Array<number>>([9549, 9551, 9552, 9554])
-    const [selectedDigestId, setSelectedDigestId] = useState<number | null>(9548)
+    const [readDigestItemIds, setReadDigestItemIds] = useState<Array<number>>([])
+    const [selectedDigestId, setSelectedDigestId] = useState<number | null>(null)
 
     const { textSize } = useTextSize()
 
@@ -20,12 +23,30 @@ export default function Dashboard() {
 
     const [refreshTimeout] = useState<number>(0)
     const [selectedDigestTag, setSelectedDigestTag] = useState('all')
-    const [counter] = useState({ count: 2, subject: 'new' })
 
     function formatTime(seconds: number) {
         const minutes = Math.floor(seconds / 60)
         const remainingSeconds = seconds % 60
         return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`
+    }
+
+    const selectedDigestItem = (id: number) => {
+        console.log('selecteDigestItem', id)
+
+        setReadDigestItemIds(prew => [...prew, id])
+        setSelectedDigestId(id)
+
+        // if (!selectMessage) return
+
+        // selectMessage(id)
+        // setChatType('chat_dashboard')
+        // fetchFirstDigestThread(id)
+        // setReadDigestItemIds(id)
+        // ()
+
+        // clearSendMessageForm()
+        // clearComposePrompt()
+        // setCreateDraft(true)
     }
 
     function markAllAsDoneHandler() {
@@ -34,48 +55,32 @@ export default function Dashboard() {
         console.log('mark_all_as_done_dashboard')
     }
 
-    function digestItemHandler() {
+    function digestItemHandler(id: number) {
+        selectedDigestItem(id)
+        // tagManageClick('digest_item')
+        console.log(id)
+    }
+
+    function digestItemDoneHandler(id: number) {
         // tagManageClick('digest_item_done')
-        // readDigestItem(item.id, allDigestThreadIds)
-        // markDigestItemAsRead(item.id)
+        // readDigestItem(id, allDigestThreadIds)
+        // markDigestItemAsRead(id)
+        console.log('digest_item_done', id)
+    }
+
+    function digestTagsHandler(key: string) {
+        setSelectedDigestTag(key)
+    }
+
+    function refreshSubmit() {
+        console.log(refreshSubmit)
     }
 
     return (
         <div className='flex flex-1 justify-between gap-1'>
             <section className='border-devider flex w-full min-w-[460px] max-w-[640px] flex-col gap-y-1 border-r-[1px] bg-surface-inactive px-6 py-5'>
                 <section className='flex h-full max-h-[601px] min-h-[509px] flex-col'>
-                    <header className='flex items-center justify-between py-2'>
-                        <Typography variant='h3' className='text-base-h3 font-normal !text-text-light'>
-                            Scive Digest AI
-                        </Typography>
-
-                        <Typography
-                            variant='button-plain'
-                            className={cn(
-                                'flex items-center text-primary',
-                                counter.subject === 'pro' && '!text-base-body3 text-white',
-                                counter.subject === 'left' && 'text-black',
-                                counter.count === 0 && counter.subject === 'new' && 'text-sky-200',
-                                counter.subject === 'left' && counter.count === 0 && 'text-error'
-                            )}
-                        >
-                            {counter.subject !== 'pro' && counter.count}{' '}
-                            {counter.subject === 'left' || counter.subject === 'pro' ? (
-                                counter.subject === 'pro' ? (
-                                    counter.subject.charAt(0).toUpperCase() + counter.subject.slice(1)
-                                ) : (
-                                    counter.subject
-                                )
-                            ) : (
-                                <Mail
-                                    size={20}
-                                    className={cn('ml-[6px] stroke-primary', {
-                                        'stroke-sky-200': counter.count === 0 && counter.subject === 'new'
-                                    })}
-                                />
-                            )}
-                        </Typography>
-                    </header>
+                    <Header title='Scive Digest AI' counter={{ count: 2, subject: 'new' }} />
 
                     <section className='flex w-auto flex-1 flex-col gap-4 overflow-hidden py-2'>
                         <div className='flex flex-wrap gap-1.5'>
@@ -88,9 +93,7 @@ export default function Dashboard() {
                                         className={cn('h-8 rounded-lg bg-white px-2', {
                                             'bg-black': selected
                                         })}
-                                        onClick={() => {
-                                            setSelectedDigestTag(tag.key)
-                                        }}
+                                        onClick={() => digestTagsHandler(tag.key)}
                                     >
                                         <Typography
                                             variant='body'
@@ -106,7 +109,12 @@ export default function Dashboard() {
                         </div>
 
                         <section className='flex h-full flex-1 flex-col overflow-hidden'>
-                            <ul className='flex flex-1 flex-col overflow-y-auto'>
+                            {/* <Typography variant='body' className='!text-text-ultra-light'>
+                                Hello! Here you will see an Executive Summary of your new emails. Click on the number to
+                                view the message each part refers to.
+                            </Typography> */}
+
+                            {/* <ul className='flex flex-1 flex-col overflow-y-auto pr-1'>
                                 {DIGESTS.map((item, idx) => {
                                     let part1 = DIGESTS.slice(0, Math.floor(DIGESTS.length / 3))
                                     let part2 = DIGESTS.slice(
@@ -126,63 +134,89 @@ export default function Dashboard() {
                                     return (
                                         <li
                                             key={idx}
-                                            className={cn(
-                                                'relative mb-2 flex w-fit cursor-default flex-row overflow-hidden rounded-lg bg-white px-2 py-1 font-semibold transition-all duration-150 ease-in-out',
-                                                isHoverDigest && `bg-white !text-text-ultra-light`,
-                                                isReadDigest && 'bg-gray-200 font-normal !text-gray-400',
-                                                isHoverReadDigest && 'bg-gray-200 font-semibold !text-gray-400',
-                                                isActiveDigest && 'bg-black !text-white',
-
-                                                part3.includes(item) &&
-                                                    `min-h-fit text-base-body2 leading-5 ${
-                                                        textSize === 'large'
-                                                            ? 'desktop:text-base-body'
-                                                            : 'desktop:text-base-body2'
-                                                    }`,
-                                                part2.includes(item) &&
-                                                    `text-base-body-digest min-h-fit leading-7 ${
-                                                        textSize === 'large'
-                                                            ? 'desktop:text-base-body-digest1'
-                                                            : 'desktop:text-base-body-digest'
-                                                    }`,
-                                                part1.includes(item) &&
-                                                    `text-base-body-digest1 min-h-fit leading-[30px] ${
-                                                        textSize === 'large'
-                                                            ? 'desktop:text-base-h3'
-                                                            : 'desktop:text-base-body-digest1'
-                                                    }`
-                                            )}
+                                            className='relative flex min-h-fit flex-row overflow-hidden'
                                             onMouseLeave={() => setIsHoveredId(null)}
                                             onMouseEnter={() => setIsHoveredId(String(item.id))}
+                                            onClick={() => digestItemHandler(item.id)}
                                         >
-                                            {item.content}
-                                            {isHoverDigest && (
-                                                <Button
-                                                    variant='clear'
-                                                    className={cn(
-                                                        'absolute left-0 top-0 flex h-full w-[32px] rounded-none bg-button px-0'
-                                                    )}
-                                                    onClick={digestItemHandler}
-                                                >
-                                                    <svg
-                                                        width='28px'
-                                                        height='28px'
-                                                        viewBox='0 0 36 36'
-                                                        fill='none'
-                                                        xmlns='http://www.w3.org/2000/svg'
+                                            <Typography
+                                                variant='body'
+                                                className={cn(
+                                                    'relative mb-2 flex w-fit cursor-default flex-row overflow-hidden rounded-lg bg-white px-2 py-1 font-semibold transition-all duration-150 ease-in-out',
+                                                    isHoverDigest && `bg-white !text-text-ultra-light`,
+                                                    isReadDigest && 'bg-gray-200 font-normal !text-gray-400',
+                                                    isHoverReadDigest && 'bg-gray-200 font-semibold !text-gray-400',
+                                                    isActiveDigest && 'bg-black !text-white',
+
+                                                    part3.includes(item) &&
+                                                        `min-h-fit text-base-body2 leading-5 ${
+                                                            textSize === 'large'
+                                                                ? 'desktop:text-base-body'
+                                                                : 'desktop:text-base-body2'
+                                                        }`,
+                                                    part2.includes(item) &&
+                                                        `min-h-fit text-base-body-digest leading-7 ${
+                                                            textSize === 'large'
+                                                                ? 'desktop:text-base-body-digest1'
+                                                                : 'desktop:text-base-body-digest'
+                                                        }`,
+                                                    part1.includes(item) &&
+                                                        `min-h-fit text-base-body-digest1 leading-[30px] ${
+                                                            textSize === 'large'
+                                                                ? 'desktop:text-base-h3'
+                                                                : 'desktop:text-base-body-digest1'
+                                                        }`
+                                                )}
+                                            >
+                                                {item.content}
+                                                {isHoverDigest && (
+                                                    <Button
+                                                        variant='clear'
+                                                        className={cn(
+                                                            'absolute left-0 top-0 flex h-full w-[32px] rounded-none bg-button px-0'
+                                                        )}
+                                                        onClick={() => digestItemDoneHandler(item.id)}
                                                     >
-                                                        <path
-                                                            d='M11.25 17.25L16.25 22.25L24.75 13.75'
-                                                            stroke='#ffff'
-                                                            strokeWidth='5'
-                                                        />
-                                                    </svg>
-                                                </Button>
-                                            )}
+                                                        <svg
+                                                            width='28px'
+                                                            height='28px'
+                                                            viewBox='0 0 36 36'
+                                                            fill='none'
+                                                            xmlns='http://www.w3.org/2000/svg'
+                                                        >
+                                                            <path
+                                                                d='M11.25 17.25L16.25 22.25L24.75 13.75'
+                                                                stroke='#ffff'
+                                                                strokeWidth='5'
+                                                            />
+                                                        </svg>
+                                                    </Button>
+                                                )}
+                                            </Typography>
                                         </li>
                                     )
                                 })}
-                            </ul>
+                            </ul> */}
+
+                            <Typography variant='body' className='text-base-body text-text-bold'>
+                                Oops, the number of detailed report generation is over. Need more?
+                                <Link
+                                    href={paths.settings('plans')}
+                                    className={cn('pl-2 text-black underline underline-offset-4')}
+                                >
+                                    Check out our plans.
+                                </Link>
+                                {/* <Button
+                                    variant='body'
+                                    className={cn(
+                                        'pl-2 underline underline-offset-4',
+                                        textColor.boldText,
+                                        textColor.black
+                                    )}
+                                >
+                                    Check out our plans.
+                                </Button> */}
+                            </Typography>
                         </section>
                     </section>
 
@@ -202,28 +236,32 @@ export default function Dashboard() {
                                     'bg-sky-400': refreshTimeout !== 0
                                 }
                             )}
+                            onClick={refreshSubmit}
                         >
                             <Wand2 size={20} className='stroke-black' />
                             {refreshTimeout !== 0 ? `Timeout ${formatTime(refreshTimeout || 0)}` : `Generate new`}
                         </Button>
-                        {/* 
-                        <Button
-                            classNameText={cn(refreshCount ? text.white : 'text-red', 'ml-1')}
-                            variant='button-plain'
-                            icon={refreshTimeout === 0 ? 'Wand2' : undefined}
-                            noMargin
-                            sizeIcon={20}
-                            styleOnHover='bg-button-hover'
-                            strokeWidthIcon={2}
-                            classNameIcon='p-base-x1'
-                            colorIcon={refreshCount ? 'black' : 'red'}
-                            onPress={refreshSubmit}
-                        >
-                            {refreshTimeout !== 0 ? `Timeout ${formatTime(refreshTimeout || 0)}` : `Generate new`}
-                        </Button> */}
                     </footer>
                 </section>
-                <section className='flex flex-1 bg-sky-500'>MESSAGE SUMMARY</section>
+
+                <section className='flex flex-1 flex-col'>
+                    <Header title='Message Summary' counter={{ count: 2, subject: 'pro' }} />
+
+                    <section className='flex h-full flex-1 flex-col overflow-hidden'>
+                        <Typography variant='body' className='!text-text-ultra-light'>
+                            Here you will see the AI-generated details of the selected email
+                        </Typography>
+                        {/* <ul className='flex flex-1 flex-col overflow-y-auto'>
+                            {parseStringToList(MESSAGE_DETAILS).length > 1
+                                ? parseStringToList(MESSAGE_DETAILS).map((item: string, idx: number) => (
+                                      <li key={idx} className='mb-0.5'>
+                                          <Typography variant='body'>{item}</Typography>
+                                      </li>
+                                  ))
+                                : MESSAGE_DETAILS}
+                        </ul> */}
+                    </section>
+                </section>
             </section>
 
             <section className='border-devider min-w-[536px] flex-1 border-x-[1px] desktop:min-w-[656px]'>CHAT</section>

@@ -1,5 +1,5 @@
-import { DashboardScreen } from '@/screens'
+import { SettingsScreen } from '@/screens'
 
 export default function Dashboard() {
-    return <DashboardScreen />
+    return <SettingsScreen />
 }

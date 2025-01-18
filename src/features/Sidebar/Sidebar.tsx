@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 import { avatarImage, logoSidebarHoverSVG, logoSidebarInactiveSVG, logoSidebarSVG } from '@/shared/assets'
-import { UserAvatar } from '@/shared/components'
+import { Hint, UserAvatar } from '@/shared/components'
 import { paths } from '@/shared/config'
 
 import { SidebarItem } from './ui/SidebarItem'
@@ -22,12 +22,19 @@ export function Sidebar() {
     return (
         <section className='flex w-14 flex-col items-center justify-between pb-[46px] pt-8'>
             <nav className='flex max-w-base-x10 flex-col items-center justify-center gap-2'>
-                <SidebarItem href={paths.dashboard} src={dashboardIcon.src} setIsHovered={setIsHovered} />
-                <SidebarItem href={paths.mailbox()} icon={Mails} />
+                <Hint label='Dashboard' side='right' aling='center'>
+                    <SidebarItem href={paths.dashboard} src={dashboardIcon.src} setIsHovered={setIsHovered} />
+                </Hint>
+                <Hint label='Mailbox' side='right' aling='center'>
+                    <SidebarItem href={paths.mailbox()} icon={Mails} />
+                </Hint>
                 {/* <SidebarItem href={paths.todos()} icon={ListTodo}  /> */}
             </nav>
-            <Link href={paths.settings}>
-                <UserAvatar src={avatarImage.src} />
+
+            <Link href={paths.settings()}>
+                <Hint label='User settings' side='right' aling='center'>
+                    <UserAvatar src={avatarImage.src} />
+                </Hint>
             </Link>
         </section>
     )

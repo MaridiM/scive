@@ -1,8 +1,8 @@
-import { forwardRef } from 'react'
+import { type ComponentProps, forwardRef } from 'react'
 
 import { cn } from '@/shared/utils'
 
-const Input = forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(({ className, type, ...props }, ref) => (
+const Input = forwardRef<HTMLInputElement, ComponentProps<'input'>>(({ className, type, ...props }, ref) => (
     <input
         type={type}
         className={cn(

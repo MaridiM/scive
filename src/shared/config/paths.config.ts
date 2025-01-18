@@ -6,5 +6,5 @@ export const paths = {
         `/mailbox${(id || label) && '?'}${label && `label=${label}${id && '&'}`}${id && `id=${id}`}`,
     todos: (filter: string = '', id: string = ''): string =>
         `/todos${(id || filter) && '?'}${filter && `filter=${filter}${id && '&'}`}${id && `id=${id}`}`,
-    settings: '/settings'
+    settings: (path: 'plans' | 'billings' | 'notifications' | '' = '') => `/settings${path && '?path='}${path}`
 }

@@ -1,0 +1,1 @@
+export const MESSAGE_DETAILS = 'Dmytro Marynenko sent various test messages and a Jira notification.  He tested message functionality and sent updates.\n\n• Test messages sent\n• Jira issue updated\n• Fix bug'

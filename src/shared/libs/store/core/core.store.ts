@@ -6,7 +6,7 @@ import type { ICoreStore, TTextSize } from './core.types'
 export const coreStore = create(
     persist<ICoreStore>(
         set => ({
-            textSize: 'large',
+            textSize: 'small',
             setTextSize: (value: TTextSize) => set({ textSize: value })
         }),
         {
