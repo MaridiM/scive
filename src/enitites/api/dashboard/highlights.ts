@@ -11,7 +11,16 @@ export const HIGHLIGHTS = {
             "Message fix attempt",
             "Opened compose test",
             "Hello my friend",
-            "D"
+            "Some message",
+            "Generated message",
+            "I dont know it",
+            "Test message sent",
+            "Message fix attempt",
+            "Opened compose test",
+            "Hello my friend",
+            "Some message",
+            "Generated message",
+            "I dont know it"
         ],
         "user_id": 40,
         "created_at": "2025-01-17T23:12:55.048922+00:00"
