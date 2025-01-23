@@ -1,21 +1,76 @@
 'use client'
 
-import { CircleCheckBig, Plus, Star, Wand2 } from 'lucide-react'
-import Link from 'next/link'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { format } from 'date-fns'
+import {
+    CalendarIcon,
+    CheckCircle,
+    Circle,
+    CircleCheckBig,
+    PencilLine,
+    Plus,
+    PlusCircle,
+    Star,
+    Wand2,
+    X
+} from 'lucide-react'
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useKey } from 'react-use'
+import { z } from 'zod'
 
-import { Button, Hint, Typography } from '@/shared/components'
-import { paths } from '@/shared/config'
+import {
+    Button,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    Hint,
+    Input,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    SearchInput,
+    Typography
+} from '@/shared/components'
+import { Calendar } from '@/shared/components/ui/Calendar'
 import { useTextSize } from '@/shared/hooks'
 import { cn, parseStringToList } from '@/shared/utils'
 
-import { DIGESTS, DIGEST_TAGS, HIGHLIGHTS, MESSAGE_DETAILS, TODO_SUGGESTIONS } from '@/enitites/api'
+import { DIGESTS, DIGEST_TAGS, HIGHLIGHTS, MESSAGE_DETAILS, TODO_DASHBOARD, TODO_SUGGESTIONS } from '@/enitites/api'
 import { Widget } from '@/widgets'
 
+type TTodoSuggestionsFilterKey = 'new' | 'due' | 'favorite'
+
+const addTodoFormSchema = z.object({
+    content: z.string().min(1),
+    sub_content: z.string().optional(),
+    due: z.date().optional(),
+    is_favorite: z.boolean()
+})
+
 export default function Dashboard() {
+    const [showAddTaskPopover, setShowAddTaskPopover] = useState<boolean>(false)
+    const [showPopoverCalendar, setShowPopoverCalendar] = useState<boolean>(false)
+
+    const [isNoValidAddTaskField, setIsNoValidAddTaskField] = useState<boolean>(false)
+    const [isEmptyAddTaskContentField, setIsEmptyAddTaskContentField] = useState<boolean>(false)
+    const [isEmptyAddTaskSubContentField, setIsEmptyAddTaskSubContentField] = useState<boolean>(false)
+
+    const addTodoForm = useForm<z.infer<typeof addTodoFormSchema>>({
+        resolver: zodResolver(addTodoFormSchema),
+        defaultValues: {
+            content: '',
+            sub_content: '',
+            is_favorite: false,
+            due: undefined
+        }
+    })
+
+    const [filterTodoSuggestion, setFilterTodoSuggestion] = useState<TTodoSuggestionsFilterKey>('new')
     const [isFavorite, setIsFavorite] = useState<boolean>(false)
 
-    const [readDigestItems, setRreadDigestItems] = useState<Array<string>>(['9555', '19548'])
+    const [readDigestItems] = useState<Array<string>>(['9555', '19548'])
     const [readDigestItemIds, setReadDigestItemIds] = useState<Array<number>>([])
     const [selectedDigestId, setSelectedDigestId] = useState<number | null>(null)
 
@@ -88,15 +143,87 @@ export default function Dashboard() {
         //         is_favorite: isFavorite
         //     } as unknown as IUpdateTodo)
     }
+
     function isFavoriteTodoSuggestionItemHandler() {
         console.log('todo_add_dashboard')
         setIsFavorite(!isFavorite)
         // tagManageClick('todo_favorite_dashboard')
     }
 
+    function isFavoriteAddTodoFormHandler() {
+        addTodoForm.setValue('is_favorite', !isFavorite)
+        setIsFavorite(!isFavorite)
+    }
+
+    function todoListFilterHandler(key: TTodoSuggestionsFilterKey) {
+        console.log('Filter by: ', key)
+        setFilterTodoSuggestion(key)
+        // filterTodos(key)}
+        // tagManageClick('todo_filter_new_dashboard')
+        // tagManageClick('todo_filter_by_date_dashboard')
+        // tagManageClick('todo_filter_favorite_dashboard')
+    }
+
+    function isFavoriteTodoItemHandler(id: number) {
+        console.log('todo_favorite_dashboard', id)
+        // updateTask &&
+        //     updateTask(id, {
+        //         ...todo,
+        //         is_favorite: !is_favorite
+        //     })
+    }
+
+    function isDoneTodoItemHandler(id: number) {
+        console.log('todo_complete_dashboard', id)
+        // tagManageClick('todo_complete_dashboard')
+        // updateTask &&
+        //     updateTask(id as number, {
+        //         ...todo,
+        //         is_done: !is_done
+        //     })
+    }
+
+    function showAddTaskPopoverHandler() {
+        setShowAddTaskPopover(!showAddTaskPopover)
+        if (showAddTaskPopover) {
+            addTodoForm.reset()
+        }
+    }
+
+    function createNewTask() {
+        const { dirtyFields } = addTodoForm.formState
+        console.log(addTodoForm.getValues())
+
+        setIsNoValidAddTaskField(
+            !Object.keys(dirtyFields).includes('content') || !Object.keys(dirtyFields).includes('sub_content')
+        )
+        setIsEmptyAddTaskContentField(!Object.keys(dirtyFields).includes('content'))
+        setIsEmptyAddTaskSubContentField(!Object.keys(dirtyFields).includes('sub_content'))
+
+        if (Object.keys(dirtyFields).includes('content') || Object.keys(dirtyFields).includes('sub_content')) {
+            setShowAddTaskPopover(false)
+            setShowAddTaskPopover(false)
+            setIsNoValidAddTaskField(false)
+            setIsEmptyAddTaskContentField(false)
+            setIsEmptyAddTaskSubContentField(false)
+            addTodoForm.reset()
+        }
+    }
+
+    function cancelCreateTask() {
+        setShowAddTaskPopover(false)
+        setIsNoValidAddTaskField(false)
+        setIsEmptyAddTaskContentField(false)
+        setIsEmptyAddTaskSubContentField(false)
+        addTodoForm.reset()
+    }
+
+    useKey('Escape', cancelCreateTask)
+    useKey('Enter', createNewTask)
+
     return (
-        <div className='grid flex-1 grid-cols-[minmax(440px,640px)_minmax(556px,auto)_minmax(320px,480px)] gap-1'>
-            <aside className='border-devider grid grid-rows-[1fr_auto] gap-2 border-r-[1px] bg-surface-inactive desktop:max-w-[640px]'>
+        <div className='grid flex-1 grid-cols-[minmax(440px,640px)_minmax(576px,auto)_minmax(320px,480px)] gap-1'>
+            <aside className='border-devider grid grid-rows-[1fr_auto] gap-2 border-r-[1px] bg-surface-inactive'>
                 <Widget
                     className='max-h-[567px] min-h-[512px]'
                     title='Scive Digest AI'
@@ -138,12 +265,12 @@ export default function Dashboard() {
 
                             <ul className='flex flex-1 flex-col overflow-y-auto pr-1'>
                                 {DIGESTS.map((item, idx) => {
-                                    let part1 = DIGESTS.slice(0, Math.floor(DIGESTS.length / 3))
-                                    let part2 = DIGESTS.slice(
+                                    const part1 = DIGESTS.slice(0, Math.floor(DIGESTS.length / 3))
+                                    const part2 = DIGESTS.slice(
                                         Math.floor(DIGESTS.length / 3),
                                         Math.floor((2 * DIGESTS.length) / 3)
                                     )
-                                    let part3 = DIGESTS.slice(Math.floor((2 * DIGESTS.length) / 3))
+                                    const part3 = DIGESTS.slice(Math.floor((2 * DIGESTS.length) / 3))
 
                                     const isReadDigest =
                                         readDigestItemIds.includes(item.id) && selectedDigestId !== item.id
@@ -278,18 +405,266 @@ export default function Dashboard() {
                 </Widget>
             </aside>
 
-            <section className='border-devider grid grid-rows-[auto_minmax(100px,334px)] gap-base-x2 border-x-[1px] bg-white desktop:min-w-[656px]'>
+            <section className='border-devider grid grid-rows-[auto_minmax(100px,334px)] gap-base-x2 border-x-[1px] bg-white'>
                 <section className='flex flex-col bg-green-900'>CHAT</section>
                 <section className='flex flex-col bg-orange-900'>EDITOR</section>
             </section>
 
-            <aside className='border-devider grid grid-rows-[1fr_auto_auto] gap-2 border-l-[1px] bg-white desktop:max-w-[480px]'>
-                <Widget className='flex flex-col bg-red-300' title='To-Do list'>
-                    <section className='flex flex-col bg-green-900'>CHAT</section>
-                    <section className='flex flex-col bg-sky-900'>CHAT</section>
-                    <section className='flex flex-col bg-orange-900'>CHAT</section>
+            <aside className='border-devider grid grid-rows-[minmax(463px,463px)_auto_auto] gap-2 border-l-[1px] bg-white'>
+                {/* <Widget className='flex flex-col bg-red-300' title='To-Do list'> */}
+                <Widget className='flex flex-col'>
+                    <section className={cn('flex items-center justify-between py-2')}>
+                        <Typography variant='h3' className='text-base-h3 font-normal !text-text-light'>
+                            To-Do List
+                        </Typography>
+
+                        <ul className='flex items-center justify-between gap-1'>
+                            <li
+                                className={cn('cursor-pointer px-base-x3 py-base-x1 !text-base-body1 text-text-light', {
+                                    'font-semibold text-black': filterTodoSuggestion === 'new'
+                                })}
+                                onClick={() => todoListFilterHandler('new')}
+                            >
+                                New
+                            </li>
+                            <li
+                                className={cn('cursor-pointer px-base-x3 py-base-x1 !text-base-body1 text-text-light', {
+                                    'font-semibold text-black': filterTodoSuggestion === 'due'
+                                })}
+                                onClick={() => todoListFilterHandler('due')}
+                            >
+                                By date
+                            </li>
+                            <li
+                                className={cn('cursor-pointer px-base-x3 py-base-x1')}
+                                onClick={() => todoListFilterHandler('favorite')}
+                            >
+                                <Star
+                                    size={20}
+                                    className={cn('stroke-star', {
+                                        'fill-star': filterTodoSuggestion === 'favorite'
+                                    })}
+                                />
+                            </li>
+                        </ul>
+                    </section>
+
+                    <SearchInput />
+
+                    <section className='flex flex-col'>
+                        <Button
+                            variant='clear'
+                            size='clear'
+                            className={cn(
+                                'rounded-y-lg flex items-center justify-start gap-4 px-2 py-4 font-normal text-black transition-all duration-300 ease-in-out hover:bg-icon-surface',
+                                {
+                                    'rounded-b-none bg-icon-surface hover:bg-icon-surface': showAddTaskPopover
+                                }
+                            )}
+                            onClick={showAddTaskPopoverHandler}
+                        >
+                            <PlusCircle size={24} className={cn('stroke-primary')} />
+                            Add a task
+                        </Button>
+                        {showAddTaskPopover && (
+                            <Form {...addTodoForm}>
+                                <form className='flex flex-col gap-2 rounded-bl-lg rounded-br-lg bg-icon-surface pb-4 pl-4'>
+                                    <FormField
+                                        control={addTodoForm.control}
+                                        name='content'
+                                        render={({ field }) => (
+                                            <FormItem className='flex flex-col'>
+                                                <FormControl>
+                                                    <div className='flex h-[36] w-full items-center justify-start gap-4 border-none px-2'>
+                                                        <Circle size={20} />
+                                                        <Input
+                                                            placeholder='Title'
+                                                            className={cn(
+                                                                'rounded-[4px] bg-transparent pl-2 !text-base-body1 font-normal text-text-bold placeholder:text-text-light',
+                                                                {
+                                                                    'bg-error/20 border border-error text-error':
+                                                                        isEmptyAddTaskContentField &&
+                                                                        isNoValidAddTaskField
+                                                                }
+                                                            )}
+                                                            {...field}
+                                                        />
+                                                        <Button
+                                                            variant='clear'
+                                                            size='clear'
+                                                            type='button'
+                                                            className='min-h-9 min-w-9 max-w-9'
+                                                            onClick={isFavoriteAddTodoFormHandler}
+                                                        >
+                                                            <Star
+                                                                size={20}
+                                                                className={cn('stroke-star', {
+                                                                    'fill-star': isFavorite
+                                                                })}
+                                                            />
+                                                        </Button>
+                                                    </div>
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={addTodoForm.control}
+                                        name='sub_content'
+                                        render={({ field }) => (
+                                            <FormItem className='flex flex-col'>
+                                                <FormControl>
+                                                    <div className='flex h-[36] w-full items-center justify-start gap-4 border-none pl-4 pr-2'>
+                                                        <PencilLine size={20} />
+                                                        <Input
+                                                            placeholder='Description'
+                                                            className={cn(
+                                                                'rounded-[4px] bg-transparent pl-2 !text-base-body1 font-normal text-text-bold placeholder:text-text-light',
+                                                                {
+                                                                    'bg-error/20 border border-error text-error':
+                                                                        !isEmptyAddTaskContentField &&
+                                                                        isEmptyAddTaskSubContentField &&
+                                                                        isNoValidAddTaskField
+                                                                }
+                                                            )}
+                                                            {...field}
+                                                        />
+                                                    </div>
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={addTodoForm.control}
+                                        name='due'
+                                        render={({ field }) => (
+                                            <FormItem className='flex flex-col'>
+                                                <FormControl>
+                                                    <Popover
+                                                        open={showPopoverCalendar}
+                                                        onOpenChange={() =>
+                                                            setShowPopoverCalendar(!showPopoverCalendar)
+                                                        }
+                                                    >
+                                                        <div className='flex gap-2 pr-2'>
+                                                            <PopoverTrigger asChild className='w-full'>
+                                                                <div className='text-text-bold1 flex h-9 cursor-pointer items-center gap-4 pl-6 pr-2'>
+                                                                    <CalendarIcon
+                                                                        size={24}
+                                                                        className='stroke-black stroke-[1.5px]'
+                                                                    />
+                                                                    <span
+                                                                        className={cn(
+                                                                            'w-full !text-base-body1 font-normal text-text-light',
+                                                                            { 'text-text-bold': field.value }
+                                                                        )}
+                                                                    >
+                                                                        {field.value
+                                                                            ? format(field.value, 'MM.dd.yyyy')
+                                                                            : 'Pick a date'}
+                                                                    </span>
+                                                                </div>
+                                                            </PopoverTrigger>
+                                                            {field.value && (
+                                                                <Button
+                                                                    variant='clear'
+                                                                    size='clear'
+                                                                    className='flex min-h-9 min-w-9 max-w-9 items-center justify-center hover:bg-gray-100'
+                                                                    onClick={() =>
+                                                                        addTodoForm.setValue('due', undefined)
+                                                                    }
+                                                                >
+                                                                    <X size={20} className='stroke-black' />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                        <PopoverContent align='start' className='w-auto p-0'>
+                                                            <Calendar
+                                                                mode='single'
+                                                                selected={field.value}
+                                                                onSelect={date => {
+                                                                    field.onChange(date)
+                                                                    setShowPopoverCalendar(!showPopoverCalendar)
+                                                                }}
+                                                            />
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </form>
+                            </Form>
+                        )}
+                    </section>
+
+                    <section className='flex flex-1 flex-col gap-4 overflow-hidden'>
+                        {/* <Typography variant='body' className='!text-text-ultra-light'>
+                            This is our little daily tasks section. You can add tasks here from selected emails or
+                            create them yourself.
+                        </Typography> */}
+
+                        <ul className='flex flex-1 flex-col gap-2 overflow-y-auto pr-1'>
+                            {TODO_DASHBOARD.map(item => (
+                                <li key={item.id} className='bg flex w-full flex-col items-center gap-2'>
+                                    <div className='flex w-full items-center'>
+                                        <Hint label='Mark completed' side='right' asChild>
+                                            <Button
+                                                variant='clear'
+                                                size='clear'
+                                                className='min-h-9 min-w-9 max-w-9'
+                                                onClick={() => isDoneTodoItemHandler(item.id)}
+                                            >
+                                                {item.is_done ? (
+                                                    <CheckCircle size={16} className='stroke-tooltip' />
+                                                ) : (
+                                                    <Circle size={16} className='stroke-black' />
+                                                )}
+                                            </Button>
+                                        </Hint>
+
+                                        <Typography
+                                            variant='body-list'
+                                            className={cn('w-full text-wrap leading-6 !text-text-bold', {
+                                                'text-red': item.date === 'Yesterday'
+                                            })}
+                                        >
+                                            {item.content}
+                                        </Typography>
+
+                                        <Button
+                                            variant='clear'
+                                            size='clear'
+                                            className='min-h-9 min-w-9 max-w-9'
+                                            onClick={() => isFavoriteTodoItemHandler(item.id)}
+                                        >
+                                            <Star
+                                                size={20}
+                                                className={cn('stroke-star', {
+                                                    'fill-star': item.is_favorite
+                                                })}
+                                            />
+                                        </Button>
+                                    </div>
+                                    {item.date && (
+                                        <div
+                                            className={cn('w-fit rounded-full bg-surface-inactive px-base-x2 pb-[2px]')}
+                                        >
+                                            <Typography
+                                                variant='button-plain'
+                                                className={cn('text-center !text-base-body5 text-text-light')}
+                                            >
+                                                {item.date}
+                                            </Typography>
+                                        </div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
                 </Widget>
-                <Widget className='max-h-[120px] min-h-[120px]'>
+
+                <Widget className='max-h-[96px] min-h-[96px] py-1'>
                     <section className='flex flex-1 flex-col gap-4 overflow-hidden'>
                         {/* <Typography variant='body' className='!text-text-ultra-light'>
                             Here you can add important things from executive summary to your tasks
@@ -298,7 +673,7 @@ export default function Dashboard() {
                         <ul className='flex flex-1 flex-col gap-1 overflow-y-auto pr-1'>
                             {TODO_SUGGESTIONS.content.map((item: string, idx: number) => (
                                 <li key={idx} className='flex items-center'>
-                                    <Hint side='right' label='Add to To-Do list'>
+                                    <Hint side='right' label='Add to To-Do list' asChild>
                                         <Button
                                             variant='clear'
                                             className='p-base-x2'

@@ -1,4 +1,6 @@
-import type { PropsWithChildren } from 'react'
+'use client'
+
+import { type PropsWithChildren, useEffect, useState } from 'react'
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui'
 
@@ -10,6 +12,14 @@ interface IProps {
 }
 
 export function Hint({ children, label, asChild, aling, side }: PropsWithChildren<IProps>) {
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) return null // Возвращаем null на сервере, чтобы избежать ошибки SSR
+
     return (
         <TooltipProvider>
             <Tooltip delayDuration={0}>

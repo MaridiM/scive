@@ -14,12 +14,13 @@ const config: Config = {
                     dashboard: 'var(--bg-dashboard)',
                     side: 'var(--bg-side)'
                 },
+
                 white: 'var(--color-white)',
                 black: 'var(--color-black)',
                 blue: 'var(--color-blue)',
-                primary: 'var(--primary)',
-                secondary: 'var(--secondary)',
-
+                primary: {
+                    DEFAULT: 'var(--primary)'
+                },
                 important: {
                     DEFAULT: 'var(--important)',
                     light: 'var(--important-light)'
@@ -52,10 +53,7 @@ const config: Config = {
                     hover: 'var(--icon-hover)',
                     surface: 'var(--icon-surface)'
                 },
-                border: {
-                    DEFAULT: 'var(--border-default)',
-                    input: 'var(--border-input)'
-                },
+                border: 'var(--border)',
                 surface: {
                     hover: 'var(--surface-hover)',
                     'over-hover': 'var(--surface-over-hover)',
@@ -69,32 +67,31 @@ const config: Config = {
                 tooltip: 'var(--tooltip)',
                 star: 'var(--star)',
                 scroll: 'var(--scroll-down-counter)',
-
                 error: {
                     DEFAULT: 'var(--error)',
                     light: 'var(--error-light)',
                     surface: 'var(--error-surface)'
                 },
                 indigo: {
-                    DEFAULT: 'var(--indigo-400)',
                     '100': 'var(--indigo-100)',
                     '200': 'var(--indigo-200)',
                     '300': 'var(--indigo-300)',
-                    '400': 'var(--indigo-300)'
+                    '400': 'var(--indigo-300)',
+                    DEFAULT: 'var(--indigo-400)'
                 },
                 green: {
-                    DEFAULT: 'var(--green-400)',
                     '100': 'var(--green-100)',
                     '200': 'var(--green-200)',
                     '300': 'var(--green-300)',
-                    '400': 'var(--green-300)'
+                    '400': 'var(--green-300)',
+                    DEFAULT: 'var(--green-400)'
                 },
                 orange: {
-                    DEFAULT: 'var(--orange-400)',
                     '100': 'var(--orange-100)',
                     '200': 'var(--orange-200)',
                     '300': 'var(--orange-300)',
-                    '400': 'var(--orange-300)'
+                    '400': 'var(--orange-300)',
+                    DEFAULT: 'var(--orange-400)'
                 },
                 sky: {
                     '50': 'var(--sky-50)',
