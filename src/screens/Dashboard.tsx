@@ -14,7 +14,7 @@ import {
     Wand2,
     X
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useKey } from 'react-use'
 import { z } from 'zod'
@@ -186,27 +186,43 @@ export default function Dashboard() {
     function showAddTaskPopoverHandler() {
         setShowAddTaskPopover(!showAddTaskPopover)
         if (showAddTaskPopover) {
+            setIsNoValidAddTaskField(false)
+            setIsEmptyAddTaskContentField(false)
+            setIsEmptyAddTaskSubContentField(false)
             addTodoForm.reset()
         }
     }
 
-    function createNewTask() {
+    useEffect(() => {
         const { dirtyFields } = addTodoForm.formState
-        console.log(addTodoForm.getValues())
 
-        setIsNoValidAddTaskField(
-            !Object.keys(dirtyFields).includes('content') || !Object.keys(dirtyFields).includes('sub_content')
-        )
-        setIsEmptyAddTaskContentField(!Object.keys(dirtyFields).includes('content'))
-        setIsEmptyAddTaskSubContentField(!Object.keys(dirtyFields).includes('sub_content'))
+        const isContentValid = dirtyFields.content
+        const isSubContentValid = dirtyFields.sub_content
 
-        if (Object.keys(dirtyFields).includes('content') || Object.keys(dirtyFields).includes('sub_content')) {
-            setShowAddTaskPopover(false)
+        if ((isContentValid || isSubContentValid) && isNoValidAddTaskField) {
+            setIsNoValidAddTaskField(false)
+            setIsEmptyAddTaskContentField(false)
+            setIsEmptyAddTaskSubContentField(false)
+        }
+    }, [addTodoForm.formState, isNoValidAddTaskField])
+
+    function createNewTask(event: globalThis.KeyboardEvent) {
+        event.preventDefault()
+        const { dirtyFields } = addTodoForm.formState
+
+        const isContentValid = dirtyFields.content
+        const isSubContentValid = dirtyFields.sub_content
+
+        if (isContentValid || isSubContentValid) {
             setShowAddTaskPopover(false)
             setIsNoValidAddTaskField(false)
             setIsEmptyAddTaskContentField(false)
             setIsEmptyAddTaskSubContentField(false)
             addTodoForm.reset()
+        } else {
+            setIsNoValidAddTaskField(true)
+            setIsEmptyAddTaskContentField(!isContentValid)
+            setIsEmptyAddTaskSubContentField(!isSubContentValid)
         }
     }
 
@@ -219,7 +235,7 @@ export default function Dashboard() {
     }
 
     useKey('Escape', cancelCreateTask)
-    useKey('Enter', createNewTask)
+    useKey('Enter', event => createNewTask(event))
 
     return (
         <div className='grid flex-1 grid-cols-[minmax(440px,640px)_minmax(576px,auto)_minmax(320px,480px)] gap-1'>
@@ -451,12 +467,12 @@ export default function Dashboard() {
 
                     <SearchInput />
 
-                    <section className='flex flex-col'>
+                    <section className='flex flex-col pr-1'>
                         <Button
                             variant='clear'
                             size='clear'
                             className={cn(
-                                'rounded-y-lg flex items-center justify-start gap-4 px-2 py-4 font-normal text-black transition-all duration-300 ease-in-out hover:bg-icon-surface',
+                                'rounded-y-lg flex items-center justify-start gap-4 px-2 py-4 font-normal text-black hover:bg-icon-surface',
                                 {
                                     'rounded-b-none bg-icon-surface hover:bg-icon-surface': showAddTaskPopover
                                 }
@@ -480,9 +496,9 @@ export default function Dashboard() {
                                                         <Input
                                                             placeholder='Title'
                                                             className={cn(
-                                                                'rounded-[4px] bg-transparent pl-2 !text-base-body1 font-normal text-text-bold placeholder:text-text-light',
+                                                                'rounded-[4px] border-[2px] border-transparent bg-transparent pl-2 !text-base-body1 font-normal text-text-bold placeholder:text-text-light',
                                                                 {
-                                                                    'bg-error/20 border border-error text-error':
+                                                                    'border-error bg-error-light':
                                                                         isEmptyAddTaskContentField &&
                                                                         isNoValidAddTaskField
                                                                 }
@@ -514,14 +530,14 @@ export default function Dashboard() {
                                         render={({ field }) => (
                                             <FormItem className='flex flex-col'>
                                                 <FormControl>
-                                                    <div className='flex h-[36] w-full items-center justify-start gap-4 border-none pl-4 pr-2'>
+                                                    <div className='flex h-[36] w-full items-center justify-start gap-4 border-none pl-6 pr-2'>
                                                         <PencilLine size={20} />
                                                         <Input
                                                             placeholder='Description'
                                                             className={cn(
                                                                 'rounded-[4px] bg-transparent pl-2 !text-base-body1 font-normal text-text-bold placeholder:text-text-light',
                                                                 {
-                                                                    'bg-error/20 border border-error text-error':
+                                                                    'border-error bg-error-light':
                                                                         !isEmptyAddTaskContentField &&
                                                                         isEmptyAddTaskSubContentField &&
                                                                         isNoValidAddTaskField
@@ -555,7 +571,7 @@ export default function Dashboard() {
                                                                     />
                                                                     <span
                                                                         className={cn(
-                                                                            'w-full !text-base-body1 font-normal text-text-light',
+                                                                            'w-full pl-1 !text-base-body1 font-normal text-text-light',
                                                                             { 'text-text-bold': field.value }
                                                                         )}
                                                                     >
