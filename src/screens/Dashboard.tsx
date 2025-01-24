@@ -39,6 +39,9 @@ import { cn, parseStringToList } from '@/shared/utils'
 
 import { DIGESTS, DIGEST_TAGS, HIGHLIGHTS, MESSAGE_DETAILS, TODO_DASHBOARD, TODO_SUGGESTIONS } from '@/enitites/api'
 import { Widget } from '@/widgets'
+import { Header } from '@/features'
+import { HeaderChat } from '@/widgets/MailChat/HeaderChat'
+import { MailChat } from '@/widgets/MailChat'
 
 type TTodoSuggestionsFilterKey = 'new' | 'due' | 'favorite'
 
@@ -422,7 +425,11 @@ export default function Dashboard() {
             </aside>
 
             <section className='border-devider grid grid-rows-[auto_minmax(100px,334px)] gap-base-x2 border-x-[1px] bg-white'>
-                <section className='flex flex-col bg-green-900'>CHAT</section>
+            <Widget>
+                <section className='flex flex-col bg-green-900'>
+                
+                    <MailChat thread={[]}/>CHAT</section>
+             </Widget>
                 <section className='flex flex-col bg-orange-900'>EDITOR</section>
             </section>
 
