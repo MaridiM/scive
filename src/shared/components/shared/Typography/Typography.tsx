@@ -13,6 +13,7 @@ export function Typography({
     nowrap = false,
     children,
     type,
+    ref,
     ...props
 }: PropsWithChildren<ITypographyProps>) {
     const { textSize } = useTextSize()

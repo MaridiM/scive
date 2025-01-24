@@ -32,5 +32,6 @@ export interface ITypographyProps {
     nowrap?: boolean
     style?: CSSProperties
     type?: TTextType
+    ref?:React.Ref<HTMLDivElement>;
     onLayout?: DOMAttributes<HTMLDivElement>['onLoad']
 }

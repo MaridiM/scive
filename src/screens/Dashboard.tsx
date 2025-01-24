@@ -426,7 +426,7 @@ export default function Dashboard() {
 
             <section className='border-devider grid grid-rows-[auto_minmax(100px,334px)] gap-base-x2 border-x-[1px] bg-white'>
             <Widget>
-                <section className='flex flex-col bg-green-900'>
+                <section  className='flex flex-col'>
                 
                     <MailChat thread={[]}/>CHAT</section>
              </Widget>

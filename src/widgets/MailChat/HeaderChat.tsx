@@ -1,32 +1,31 @@
 import Image from 'next/image'
-// import {CHAT_MESSAGES} from '@/enitites/api/chat'
 import { FC, useState } from 'react'
-
+// import * as React from "react"
 import Important from '@/shared/assets/icons/important.svg'
 import { Typography } from '@/shared/components'
 import { cn } from '@/shared/utils'
+import { useTextLayoutHandlers } from '@/shared/hooks/replaceText'
+import RelatedConversation from './RelativeConversation'
 
-interface IMessageMetadata {
-    cc: never[]
-    id: string
-    to: string[]
-    bcc: never[]
-    from_: string
-    labels: string[]
-    snippet: string
-    subject: string
-    user_id: string
-    thread_id: string
-    created_at: string
-    references: never[]
-    in_reply_to: null | string
-    provider_message_id: string
-}
+
+
+// import {
+//     Table,
+
+//     TableBody,
+//     TableCaption,
+//     TableCell,
+//     TableFooter,
+//     TableHead,
+//     TableHeader,
+//     TableRow,
+//   } from "@/components/ui/table"
 
 interface IMessage {
     name: string
     email: string
     subject: string
+    day:string
 }
 
 interface IProps {
@@ -34,44 +33,64 @@ interface IProps {
 }
 
 
+// функция для даты
+export const formattedDate = (date: string): string => {
+    const dateObj = new Date(date)
+    const today = new Date()
+
+    // Проверяем, является ли дата сегодняшним днем
+    const isToday =
+        dateObj.getDate() === today.getDate() &&
+        dateObj.getMonth() === today.getMonth() &&
+        dateObj.getFullYear() === today.getFullYear()
+
+    if (isToday) {
+        // Форматируем как время, если это сегодняшний день
+        const options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric', hour12: true }
+        return dateObj.toLocaleString('en-US', options)
+    } else {
+        // Форматируем как "день месяц", если это не сегодняшний день
+        const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
+        return dateObj.toLocaleString('en-US', options)
+    }
+}
+
+
+
+
+
 export const HeaderChat: FC<IProps> = ({ thread }) => {
     const [isImportant, setIsImportant] = useState(false)
-    console.log('isimportant', isImportant)
 
+    const{containerRef, textRef} = useTextLayoutHandlers()
+    // console.log('isimportant', isImportant)
+
+   
     return (
         <div>
-            <table className={cn('flex-col justify-between overflow-hidden border-b pt-base-x1')}>
-                <tbody className={cn('bg-blue')}>
-                    <tr>
-                        <td>
-                            <Typography>Related Conversations</Typography>
-                        </td>
-                        <td>
-                            <Typography>1</Typography>
-                        </td>
-                        <td>
-                            <Typography>2</Typography>
-                        </td>
-                    </tr>
-                </tbody>
-
+            
+                
+                <RelatedConversation/>
+                        
+                
+                <table className={cn('flex-col  border-b pt-base-x1 table-fixed')}>
                 {thread.map((item, index) => (
-                    <tbody key={index} className={cn('bg-gray')}>
-                        <tr>
-                            <td className='w-[50px] w-full pr-[8px]'>
-                                <Typography variant='button-default' className={cn('text-bold line-clamp-1')}>
+                    <tbody key={index} className='border-b border-divider-light' >
+                        <tr className='h-[40px] '>
+                            <td ref={containerRef} className=' p-0 mr-[8px]'>
+                                <Typography ref={textRef} variant='button-default' className={cn('font-bold line-clamp-1')}>
                                     {item.name}
                                 </Typography>
                             </td>
-                            <td className='pr-[8px]'>
-                                <Typography variant='calout' className='text-light-text line-clamp-1'>
+                            <td ref={containerRef} className=' w-full'>
+                                <Typography ref={textRef} variant='calout' className='text-gray-500 line-clamp-1'>
                                     {item.email}
                                 </Typography>
                             </td>
-                            <td className='max-w-16 overflow-hidden'></td>
-                            <td className={cn('min-w-fit max-w-[50px]')}>
-                                <Typography variant='label-date' className={cn('max-w-[50px]')}>
-                                    12:58
+                            <td className='w-16 '></td>
+                            <td className={cn(' w-[50px] overflow-hidden')}>
+                                <Typography variant='label-date' className={cn('w-[50px] ')}>
+                                     {formattedDate(item.day)}
                                 </Typography>
                             </td>
                         </tr>
@@ -79,18 +98,20 @@ export const HeaderChat: FC<IProps> = ({ thread }) => {
                 ))}
 
                 {thread.map((item, index) => (
-                    <tbody key={index} className={cn('bg-white')}>
-                        <tr>
-                            <td className='w-full'>
-                                <Typography variant='h4' className='line-clamp-1 font-bold leading-7'>
+                    <tbody key={index} className='border-b border-divider-light' >
+                        <tr className='h-[40px] bg-white'>
+                            <td   className='w-full pr-[8px] '>
+                                <Typography ref={textRef} variant='h4' className='line-clamp-1 font-bold '>
                                     {item.subject}
                                 </Typography>
+                                
                             </td>
-                            <td className='mr-0 w-[36px]'>
+                            <td ref={containerRef} className=' w-[36px] p-0 mr-0 '>
                                 <button onClick={() => setIsImportant(!isImportant)}>
-                                    <Image src={Important} alt='Important Icon' />
+                                    <Image src={Important} alt='Important Icon' className='w-[15px] h-[14px] flex' />
                                 </button>
                             </td>
+                            
                         </tr>
                     </tbody>
                 ))}
@@ -98,7 +119,3 @@ export const HeaderChat: FC<IProps> = ({ thread }) => {
         </div>
     )
 }
-
-// className={cn('stroke-star', {
-//     'fill-star': filterTodoSuggestion === 'favorite'
-// })}
