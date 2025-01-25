@@ -15,9 +15,8 @@ import {
     Wand2,
     X
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Letter } from 'react-letter'
 import { useKey } from 'react-use'
 import { z } from 'zod'
 
@@ -33,25 +32,15 @@ import {
     PopoverContent,
     PopoverTrigger,
     SearchInput,
-    Typography,
-    UserAvatar
+    Typography
 } from '@/shared/components'
 import { Calendar } from '@/shared/components/ui/Calendar'
 import { useTextSize } from '@/shared/hooks'
 import { useStore } from '@/shared/libs'
 import { cn, parseStringToList } from '@/shared/utils'
 
-import {
-    CHAT_MESSAGES,
-    DIGESTS,
-    DIGEST_TAGS,
-    HIGHLIGHTS,
-    MESSAGE_DETAILS,
-    THREADS,
-    TODO_DASHBOARD,
-    TODO_SUGGESTIONS
-} from '@/enitites/api'
-// import { THREADS } from '@/enitites/api/threads'
+import { DIGESTS, DIGEST_TAGS, HIGHLIGHTS, MESSAGE_DETAILS, TODO_DASHBOARD, TODO_SUGGESTIONS } from '@/enitites/api'
+import { Messages } from '@/enitites/ui'
 import { Editor, GenerateMessage } from '@/features'
 import { Widget } from '@/widgets'
 
@@ -273,15 +262,6 @@ export default function Dashboard() {
         // setChatType(type)
     }
 
-    const messagesRef = useRef<HTMLDivElement | null>(null)
-
-    useEffect(() => {
-        // После каждого изменения массива messages скроллимся к низу
-        if (messagesRef.current) {
-            messagesRef.current.scrollTop = messagesRef.current.scrollHeight
-        }
-    }, [CHAT_MESSAGES[0].messages])
-
     return (
         <div className='grid flex-1 grid-cols-[minmax(440px,640px)_minmax(576px,auto)_minmax(320px,480px)] gap-1'>
             <aside className='border-devider grid grid-rows-[1fr_auto] gap-2 border-r-[1px] bg-surface-inactive'>
@@ -471,8 +451,6 @@ export default function Dashboard() {
                     'grid-rows-[auto_420px]': showChatCompose === 'max'
                 })}
             >
-                {/* <section className='max-h-[calc(100vh-578px)]] flex flex-col overflow-hidden bg-green-900 pb-2 pt-5'> */}
-                {/* <section className='grid grid-rows-[130px_auto] overflow-hidden bg-green-900 pb-2 pt-5'> */}
                 <section
                     className={cn('flex max-h-[calc(100vh-108px)] flex-col overflow-hidden pb-2 pt-5', {
                         'grid-rows-[auto_420px]': showChatCompose === 'max'
@@ -484,53 +462,7 @@ export default function Dashboard() {
                         <div className='flex h-[47px] w-full items-center bg-green-200'>TITLE</div>
                     </header>
 
-                    <section
-                        ref={messagesRef}
-                        className={cn('flex max-h-[679px] flex-col gap-6 overflow-y-auto overflow-x-hidden px-4 py-5', {
-                            'max-h-[323px]': showChatCompose === 'max'
-                        })}
-                    >
-                        {CHAT_MESSAGES[0].messages.map((message, idx) => {
-                            const senderIsMe = message.metadata.from_ === 'dmytro.marynenko@scive.ai'
-
-                            const formatMessageGroup =
-                                idx > 0 &&
-                                format(message.metadata.created_at, 'd MMMM') ===
-                                    format(CHAT_MESSAGES[0].messages[idx - 1].metadata.created_at || '', 'd MMMM')
-
-                            return (
-                                <article key={message.metadata.id} className='flex flex-col gap-2'>
-                                    {!formatMessageGroup && (
-                                        <Typography
-                                            variant='body'
-                                            className='w-full py-2 text-center font-medium text-text-bold'
-                                        >
-                                            {format(message.metadata.created_at, 'd MMMM')}
-                                        </Typography>
-                                    )}
-
-                                    {!senderIsMe && <UserAvatar username={THREADS[5].messages[0].metadata.from_[0]} />}
-
-                                    <div className={cn('w-fit', { 'ml-auto': senderIsMe })}>
-                                        <Letter
-                                            className={cn('w-fit max-w-[701] rounded-base-x2 bg-surface-inactive p-2', {
-                                                'bg-message-outcoming': senderIsMe
-                                            })}
-                                            html={message.html ?? message.plain ?? message.metadata.snippet ?? ''}
-                                        />
-                                        {/* {!message.html && message.plain && message.plain} */}
-                                        {/* {!message.html && !message.plain && message.metadata.snippet} */}
-                                        <Typography
-                                            variant='body'
-                                            className={cn('pl-base-x2 pr-base-x2 text-text-light')}
-                                        >
-                                            <Typography>{format(message.metadata.created_at, 'MMM d')}</Typography>
-                                        </Typography>
-                                    </div>
-                                </article>
-                            )
-                        })}
-                    </section>
+                    <Messages />
                 </section>
 
                 <section className='grid grid-rows-[auto_304px] gap-1 border-t border-divider p-4'>
