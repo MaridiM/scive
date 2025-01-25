@@ -17,7 +17,7 @@ const avatarSizes = cva('', {
 })
 
 interface IProps extends VariantProps<typeof avatarSizes> {
-    src: string
+    src?: string
     username?: string
 }
 

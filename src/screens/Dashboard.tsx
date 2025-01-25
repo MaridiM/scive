@@ -7,8 +7,6 @@ import {
     CheckCircle,
     Circle,
     CircleCheckBig,
-    Clock4,
-    MoveDown,
     MoveUp,
     PencilLine,
     Plus,
@@ -17,9 +15,10 @@ import {
     Wand2,
     X
 } from 'lucide-react'
-import { MouseEvent, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useKey, useWindowSize } from 'react-use'
+import { Letter } from 'react-letter'
+import { useKey } from 'react-use'
 import { z } from 'zod'
 
 import {
@@ -34,13 +33,24 @@ import {
     PopoverContent,
     PopoverTrigger,
     SearchInput,
-    Typography
+    Typography,
+    UserAvatar
 } from '@/shared/components'
 import { Calendar } from '@/shared/components/ui/Calendar'
 import { useTextSize } from '@/shared/hooks'
+import { useStore } from '@/shared/libs'
 import { cn, parseStringToList } from '@/shared/utils'
 
-import { DIGESTS, DIGEST_TAGS, HIGHLIGHTS, MESSAGE_DETAILS, TODO_DASHBOARD, TODO_SUGGESTIONS } from '@/enitites/api'
+import {
+    CHAT_MESSAGES,
+    DIGESTS,
+    DIGEST_TAGS,
+    HIGHLIGHTS,
+    MESSAGE_DETAILS,
+    THREADS,
+    TODO_DASHBOARD,
+    TODO_SUGGESTIONS
+} from '@/enitites/api'
 // import { THREADS } from '@/enitites/api/threads'
 import { Editor, GenerateMessage } from '@/features'
 import { Widget } from '@/widgets'
@@ -80,6 +90,8 @@ export default function Dashboard() {
     const [readDigestItems] = useState<Array<string>>(['9555', '19548'])
     const [readDigestItemIds, setReadDigestItemIds] = useState<Array<number>>([])
     const [selectedDigestId, setSelectedDigestId] = useState<number | null>(null)
+
+    const { showChatCompose, setShowChatCompose } = useStore()
 
     const { textSize } = useTextSize()
 
@@ -254,6 +266,21 @@ export default function Dashboard() {
     useKey('Enter', event => createNewTask(event))
 
     // content: THREADS[5].messages[0].html
+
+    function showChatComposeHandler() {
+        setShowChatCompose(showChatCompose === 'max' ? 'min' : 'max')
+        // tagManageClick('compose_move_up_down')
+        // setChatType(type)
+    }
+
+    const messagesRef = useRef<HTMLDivElement | null>(null)
+
+    useEffect(() => {
+        // После каждого изменения массива messages скроллимся к низу
+        if (messagesRef.current) {
+            messagesRef.current.scrollTop = messagesRef.current.scrollHeight
+        }
+    }, [CHAT_MESSAGES[0].messages])
 
     return (
         <div className='grid flex-1 grid-cols-[minmax(440px,640px)_minmax(576px,auto)_minmax(320px,480px)] gap-1'>
@@ -439,17 +466,114 @@ export default function Dashboard() {
                 </Widget>
             </aside>
 
-            <section className='border-devider grid grid-rows-[auto_minmax(100px,420px)] gap-base-x2 border-x-[1px] bg-white'>
-                <section className='flex flex-col bg-green-900'>
-                    <header>Header</header>
-                    <section>
-                        
+            <section
+                className={cn('border-devider grid grid-rows-[auto_64px] gap-base-x2 border-x-[1px] bg-white', {
+                    'grid-rows-[auto_420px]': showChatCompose === 'max'
+                })}
+            >
+                {/* <section className='max-h-[calc(100vh-578px)]] flex flex-col overflow-hidden bg-green-900 pb-2 pt-5'> */}
+                {/* <section className='grid grid-rows-[130px_auto] overflow-hidden bg-green-900 pb-2 pt-5'> */}
+                <section
+                    className={cn('flex max-h-[calc(100vh-108px)] flex-col overflow-hidden pb-2 pt-5', {
+                        'grid-rows-[auto_420px]': showChatCompose === 'max'
+                    })}
+                >
+                    <header className='w-full'>
+                        <div className='flex h-[36px] w-full items-center bg-red-200'>PAGINATION</div>
+                        <div className='flex h-[47px] w-full items-center bg-sky-200'>SENDER</div>
+                        <div className='flex h-[47px] w-full items-center bg-green-200'>TITLE</div>
+                    </header>
+
+                    <section
+                        ref={messagesRef}
+                        className={cn('flex max-h-[679px] flex-col gap-6 overflow-y-auto overflow-x-hidden px-4 py-5', {
+                            'max-h-[323px]': showChatCompose === 'max'
+                        })}
+                    >
+                        {CHAT_MESSAGES[0].messages.map((message, idx) => {
+                            const senderIsMe = message.metadata.from_ === 'dmytro.marynenko@scive.ai'
+
+                            const formatMessageGroup =
+                                idx > 0 &&
+                                format(message.metadata.created_at, 'd MMMM') ===
+                                    format(CHAT_MESSAGES[0].messages[idx - 1].metadata.created_at || '', 'd MMMM')
+
+                            return (
+                                <article key={message.metadata.id} className='flex flex-col gap-2'>
+                                    {!formatMessageGroup && (
+                                        <Typography
+                                            variant='body'
+                                            className='w-full py-2 text-center font-medium text-text-bold'
+                                        >
+                                            {format(message.metadata.created_at, 'd MMMM')}
+                                        </Typography>
+                                    )}
+
+                                    {!senderIsMe && <UserAvatar username={THREADS[5].messages[0].metadata.from_[0]} />}
+
+                                    <div className={cn('w-fit', { 'ml-auto': senderIsMe })}>
+                                        <Letter
+                                            className={cn('w-fit max-w-[701] rounded-base-x2 bg-surface-inactive p-2', {
+                                                'bg-message-outcoming': senderIsMe
+                                            })}
+                                            html={message.html ?? message.plain ?? message.metadata.snippet ?? ''}
+                                        />
+                                        {/* {!message.html && message.plain && message.plain} */}
+                                        {/* {!message.html && !message.plain && message.metadata.snippet} */}
+                                        <Typography
+                                            variant='body'
+                                            className={cn('pl-base-x2 pr-base-x2 text-text-light')}
+                                        >
+                                            <Typography>{format(message.metadata.created_at, 'MMM d')}</Typography>
+                                        </Typography>
+                                    </div>
+                                </article>
+                            )
+                        })}
                     </section>
                 </section>
 
-                <section className='grid grid-rows-[auto_264px_40px] flex-col gap-1 border-t border-divider p-4'>
-                    <GenerateMessage />
-                    <Editor />
+                <section className='grid grid-rows-[auto_304px] gap-1 border-t border-divider p-4'>
+                    {showChatCompose === 'max' ? (
+                        <>
+                            <GenerateMessage />
+                            <Editor />
+                        </>
+                    ) : (
+                        <div
+                            className='flex h-9 w-full cursor-pointer items-center justify-between'
+                            onClick={showChatComposeHandler}
+                        >
+                            <div className='flex h-9 w-full items-center'>
+                                <Typography variant='body' className='!text-text-disabled'>
+                                    Type to quick respond or use Scive power...
+                                </Typography>
+                            </div>
+
+                            <div className='flex gap-4'>
+                                <Hint side='top' label={/*showChatCompose === 'max' ? 'Minimize' :*/ 'Expand'} asChild>
+                                    <Button
+                                        variant='clear'
+                                        size='clear'
+                                        className='flex h-base-x9 w-base-x9 items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                                        // onClick={showChatComposeHandler}
+                                    >
+                                        {/* {showChatCompose === 'max' ? (
+                                            <MoveDown size={20} className='stroke-black' />
+                                        ) : ( */}
+                                        <MoveUp size={20} className='stroke-black' />
+                                        {/* )} */}
+                                    </Button>
+                                </Hint>
+                            </div>
+                        </div>
+                    )}
+                    {/* {
+                         showChatCompose === 'max' && (
+                             <Editor />
+
+                         )
+                    } */}
                 </section>
             </section>
 

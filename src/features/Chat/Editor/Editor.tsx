@@ -7,6 +7,7 @@ import { Footer, TextEditor } from './ui'
 export function Editor() {
     const editorRef = useRef<HTMLDivElement>(null)
     const [value, setValue] = useState('')
+    // const [value, setValue] = useState(THREADS[5].messages[0].html ?? '')
 
     // const [files, setFiles] = useState<DocumentPicker.DocumentPickerAsset[]>([])
     // const loadFile = (file: DocumentPicker.DocumentPickerAsset) => {
@@ -25,8 +26,8 @@ export function Editor() {
     }
 
     return (
-        <>
-            <section className='overflow-auto border-y border-divider'>
+        <section className='grid h-full grid-rows-[auto_40px] flex-col gap-1'>
+            <section className='overflow-hidden border-y border-divider'>
                 <TextEditor
                     editorRef={editorRef as RefObject<HTMLDivElement>}
                     value={value ?? ''}
@@ -34,13 +35,12 @@ export function Editor() {
                     // type={type}
                 />
             </section>
-
             <Footer
                 editorRef={editorRef as RefObject<HTMLDivElement>}
                 isForvard={false}
                 clearForwardMessageHandler={clearForwardMessageHandler}
                 sendMessageHandler={sendMessageHandler}
             />
-        </>
+        </section>
     )
 }

@@ -18,8 +18,6 @@ import { RefObject, useCallback, useEffect, useMemo, useState } from 'react'
 import { Hint } from '@/shared/components'
 import { cn } from '@/shared/utils'
 
-import stylesToolbar from '../styles/toolbar.module.css'
-
 interface IProps {
     editorRef: RefObject<HTMLDivElement>
     // loadFile: (file: DocumentPicker.DocumentPickerAsset) => void

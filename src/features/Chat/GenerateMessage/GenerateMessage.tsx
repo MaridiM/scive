@@ -1,4 +1,4 @@
-'use client '
+'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MoveDown, MoveUp, Wand2 } from 'lucide-react'
@@ -9,6 +9,7 @@ import { z } from 'zod'
 
 import { Button, Form, FormControl, FormField, FormItem, Hint, Input, Slider, Typography } from '@/shared/components'
 import { useTextSize } from '@/shared/hooks'
+import { useStore } from '@/shared/libs'
 import { cn } from '@/shared/utils'
 
 export const generateComposeFormSchema = z.object({
@@ -32,9 +33,10 @@ export function GenerateMessage() {
         }
     })
 
+    const { showChatCompose, setShowChatCompose } = useStore()
+
     const { width } = useWindowSize()
     const { textSize, large, small } = useTextSize()
-    const [showChatCompose, setShowChatCompose] = useState<'min' | 'max'>('max')
     const [isEmptyGeneratePromptField, setIsEmptyGeneratePromptField] = useState<boolean>(false)
 
     function changeTextSise(textSize: 'large' | 'small') {
