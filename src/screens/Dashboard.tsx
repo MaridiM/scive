@@ -8,6 +8,8 @@ import {
     Circle,
     CircleCheckBig,
     Clock4,
+    MoveDown,
+    MoveUp,
     PencilLine,
     Plus,
     PlusCircle,
@@ -16,9 +18,9 @@ import {
     Wand2,
     X
 } from 'lucide-react'
-import { RefObject, useEffect, useRef, useState } from 'react'
+import { MouseEvent, RefObject, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useKey } from 'react-use'
+import { useKey, useWindowSize } from 'react-use'
 import { z } from 'zod'
 
 import {
@@ -33,7 +35,7 @@ import {
     PopoverContent,
     PopoverTrigger,
     SearchInput,
-    Separator,
+    Slider,
     Typography
 } from '@/shared/components'
 import { Calendar } from '@/shared/components/ui/Calendar'
@@ -41,7 +43,7 @@ import { useTextSize } from '@/shared/hooks'
 import { cn, parseStringToList } from '@/shared/utils'
 
 import { DIGESTS, DIGEST_TAGS, HIGHLIGHTS, MESSAGE_DETAILS, TODO_DASHBOARD, TODO_SUGGESTIONS } from '@/enitites/api'
-import { THREADS } from '@/enitites/api/threads'
+// import { THREADS } from '@/enitites/api/threads'
 import { TextEditor, Toolbar } from '@/features'
 import { Widget } from '@/widgets'
 
@@ -55,22 +57,29 @@ const addTodoFormSchema = z.object({
 })
 const generateComposeFormSchema = z.object({
     prompt: z.string().min(1),
-    max_words: z.number().default(50),
-    tonality: z.string().default('FRIENDLY')
+    max_words: z.number().default(0),
+    tonality: z.number().default(0)
 })
 
 type TAddTodoFormSchema = z.infer<typeof addTodoFormSchema>
 type TGenerateComposeFormSchema = z.infer<typeof generateComposeFormSchema>
 
+const tonality = ['FRIENDLY', 'NEUTRAL', 'PROFESSIONAL', 'FORMAL']
+const maxWords = [50, 150, 300, 500]
+
 export default function Dashboard() {
     const [showAddTaskPopover, setShowAddTaskPopover] = useState<boolean>(false)
     const [showPopoverCalendar, setShowPopoverCalendar] = useState<boolean>(false)
+
+    const [showChatCompose, setShowChatCompose] = useState<'min' | 'max'>('max')
 
     const [isNoValidAddTaskField, setIsNoValidAddTaskField] = useState<boolean>(false)
     const [isEmptyAddTaskContentField, setIsEmptyAddTaskContentField] = useState<boolean>(false)
     const [isEmptyAddTaskSubContentField, setIsEmptyAddTaskSubContentField] = useState<boolean>(false)
 
-    const addTodoForm = useForm<z.infer<typeof TAddTodoFormSchema>>({
+    const [isEmptyGeneratePromptField, setIsEmptyGeneratePromptField] = useState<boolean>(false)
+
+    const addTodoForm = useForm<TAddTodoFormSchema>({
         resolver: zodResolver(addTodoFormSchema),
         defaultValues: {
             content: '',
@@ -79,12 +88,12 @@ export default function Dashboard() {
             due: undefined
         }
     })
-    const generateComposeForm = useForm<z.infer<typeof TGenerateComposeFormSchema>>({
+    const generateComposeForm = useForm<TGenerateComposeFormSchema>({
         resolver: zodResolver(generateComposeFormSchema),
         defaultValues: {
             prompt: '',
-            max_words: 50,
-            tonality: 'FRIENDLY'
+            max_words: 0,
+            tonality: 0
         }
     })
 
@@ -95,7 +104,8 @@ export default function Dashboard() {
     const [readDigestItemIds, setReadDigestItemIds] = useState<Array<number>>([])
     const [selectedDigestId, setSelectedDigestId] = useState<number | null>(null)
 
-    const { textSize } = useTextSize()
+    const { textSize, large, small } = useTextSize()
+    const { width } = useWindowSize()
 
     const [isHoveredId, setIsHoveredId] = useState<string | null>(null)
 
@@ -225,7 +235,15 @@ export default function Dashboard() {
             setIsEmptyAddTaskContentField(false)
             setIsEmptyAddTaskSubContentField(false)
         }
-    }, [addTodoForm.formState, isNoValidAddTaskField])
+
+        if ((isEmptyAddTaskContentField || isEmptyAddTaskSubContentField) && isNoValidAddTaskField) {
+            setTimeout(() => {
+                setIsNoValidAddTaskField(false)
+                setIsEmptyAddTaskContentField(false)
+                setIsEmptyAddTaskSubContentField(false)
+            }, 3000)
+        }
+    }, [addTodoForm.formState, isNoValidAddTaskField, isEmptyAddTaskContentField, isEmptyAddTaskSubContentField])
 
     function createNewTask(event: globalThis.KeyboardEvent) {
         event.preventDefault()
@@ -236,7 +254,6 @@ export default function Dashboard() {
 
         if (isContentValid || isSubContentValid) {
             console.log(addTodoForm.getValues())
-
             setShowAddTaskPopover(false)
             setIsNoValidAddTaskField(false)
             setIsEmptyAddTaskContentField(false)
@@ -279,9 +296,46 @@ export default function Dashboard() {
     // }
     const [composeValue, setComposeValue] = useState('')
 
-    function generateComposeMessage() {
-        console.log(generateComposeForm.getValues())
+    useEffect(() => {
+        const { dirtyFields } = generateComposeForm.formState
+
+        const isPromptValid = dirtyFields.prompt
+
+        if (isPromptValid) {
+            setIsEmptyGeneratePromptField(false)
+        }
+
+        if (isEmptyGeneratePromptField) {
+            setTimeout(() => setIsEmptyGeneratePromptField(false), 3000)
+        }
+    }, [generateComposeForm.formState, isEmptyGeneratePromptField])
+
+    function generateComposeMessage(event: MouseEvent<HTMLButtonElement>) {
+        event.preventDefault()
+
+        const { dirtyFields } = generateComposeForm.formState
+
+        const isPromptValid = dirtyFields.prompt
+
+        if (isPromptValid) {
+            const prompt = {
+                ...generateComposeForm.getValues(),
+                max_words: maxWords[generateComposeForm.getValues().max_words],
+                tonality: tonality[generateComposeForm.getValues().tonality]
+            }
+            console.log('prompt', prompt)
+            setIsEmptyGeneratePromptField(false)
+        } else {
+            setIsEmptyGeneratePromptField(!isPromptValid)
+        }
     }
+
+    function changeTextSise(textSize: 'large' | 'small') {
+        textSize === 'large' && large()
+        textSize === 'small' && small()
+        // tagManageClick(`compose_text_size_${textSize}`)
+    }
+
     return (
         <div className='grid flex-1 grid-cols-[minmax(440px,640px)_minmax(576px,auto)_minmax(320px,480px)] gap-1'>
             <aside className='border-devider grid grid-rows-[1fr_auto] gap-2 border-r-[1px] bg-surface-inactive'>
@@ -468,20 +522,137 @@ export default function Dashboard() {
 
             <section className='border-devider grid grid-rows-[auto_minmax(100px,420px)] gap-base-x2 border-x-[1px] bg-white'>
                 <section className='flex flex-col bg-green-900'>CHAT</section>
-                <section className='grid grid-rows-[auto_264px_40px] flex-col gap-1 p-4'>
+                <section className='grid grid-rows-[auto_264px_40px] flex-col gap-1 border-t border-divider p-4'>
                     <Form {...generateComposeForm}>
                         <form className='flex flex-col gap-1'>
-                            <div className='h-9 w-full bg-orange-400'></div>
-                            {/* <View className={cn('w-full flex-row items-center border-b mb-base-x1 pb-base-x1', border.divider)}>
-                                    <View>
+                            <div className='flex h-9 w-full items-center justify-between'>
+                                <div className='flex h-9 gap-4'>
+                                    <FormField
+                                        control={generateComposeForm.control}
+                                        name='max_words'
+                                        render={({ field }) => (
+                                            <FormItem className='flex w-full min-w-[132px] max-w-[132px] flex-col items-center'>
+                                                <FormControl className='m-auto w-full'>
+                                                    <div className='flex flex-col gap-1'>
+                                                        <div className='flex w-full justify-between'>
+                                                            <span className='text-base-body5 font-medium text-text-ultra-light'>
+                                                                Short
+                                                            </span>
+                                                            <span className='text-base-body5 font-medium text-text-ultra-light'>
+                                                                Long
+                                                            </span>
+                                                        </div>
+                                                        <div className='relative'>
+                                                            <Slider
+                                                                {...field}
+                                                                defaultValue={[0]}
+                                                                max={3}
+                                                                min={0}
+                                                                step={1}
+                                                                value={[field.value]}
+                                                                onValueChange={(value: number[]) => (
+                                                                    field.onChange(value), console.log(value)
+                                                                )}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={generateComposeForm.control}
+                                        name='tonality'
+                                        render={({ field }) => (
+                                            <FormItem className='flex w-full min-w-[132px] max-w-[132px] flex-col items-center'>
+                                                <FormControl className='m-auto w-full'>
+                                                    <div className='flex flex-col gap-1'>
+                                                        <div className='flex w-full justify-between'>
+                                                            <span className='text-base-body5 font-medium text-text-ultra-light'>
+                                                                Friendly
+                                                            </span>
+                                                            <span className='text-base-body5 font-medium text-text-ultra-light'>
+                                                                Professional
+                                                            </span>
+                                                        </div>
+                                                        <div className='relative'>
+                                                            <Slider
+                                                                {...field}
+                                                                defaultValue={[0]}
+                                                                max={3}
+                                                                min={0}
+                                                                step={1}
+                                                                value={[field.value]}
+                                                                onValueChange={(value: number[]) => (
+                                                                    field.onChange(value), console.log(value)
+                                                                )}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className='flex gap-4'>
+                                    {width > 1440 && (
+                                        <div className='flex gap-2'>
+                                            <Hint side='top' label='Small' asChild>
+                                                <Button
+                                                    variant='clear'
+                                                    size='clear'
+                                                    onClick={() => changeTextSise('small')}
+                                                    className={cn(
+                                                        'flex h-[36px] w-[36px] items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out',
+                                                        { 'bg-surface-hover': textSize === 'small' }
+                                                    )}
+                                                >
+                                                    <Typography
+                                                        variant='body'
+                                                        className='!text-base-body2 font-normal text-black'
+                                                    >
+                                                        Aa
+                                                    </Typography>
+                                                </Button>
+                                            </Hint>
+                                            <Hint side='top' label='Large' asChild>
+                                                <Button
+                                                    variant='clear'
+                                                    size='clear'
+                                                    onClick={() => changeTextSise('large')}
+                                                    className={cn(
+                                                        'flex h-[36px] w-[36px] items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out',
+                                                        { 'bg-surface-hover': textSize === 'large' }
+                                                    )}
+                                                >
+                                                    <Typography variant='h4' className='font-normal !text-black'>
+                                                        Aa
+                                                    </Typography>
+                                                </Button>
+                                            </Hint>
+                                        </div>
+                                    )}
+                                    <Hint side='top' label={showChatCompose === 'max' ? 'Minimize' : 'Expand'}>
                                         <Button
-                                            onPress={onGenerate}
-                                            colorIcon={color.black}
-                                            styleColorIconOnHover='sky'
-                                            className='p-base-x2 rounded-base-x3'
-                                        />
-                                    </View>
-                            </View> */}
+                                            variant='clear'
+                                            size='clear'
+                                            className='flex h-base-x9 w-base-x9 items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                                            // onPress={() => {
+                                            //     tagManageClick('compose_move_up_down'),
+                                            //         (setSize(size === 'max' ? 'min' : 'max'), setChatType(type))
+                                            // }}
+                                        >
+                                            {showChatCompose === 'max' ? (
+                                                <MoveDown size={20} className='stroke-black' />
+                                            ) : (
+                                                <MoveUp size={20} className='stroke-black' />
+                                            )}
+                                        </Button>
+                                    </Hint>
+                                </div>
+                            </div>
+
                             <FormField
                                 control={generateComposeForm.control}
                                 name='prompt'
@@ -493,7 +664,8 @@ export default function Dashboard() {
                                                     className={cn(
                                                         'h-9 w-full rounded-[4px] border-[2px] border-transparent bg-transparent px-3 text-base-body text-text-bold outline-none placeholder:text-text-disabled',
                                                         {
-                                                            // 'border-error bg-error-light': noValidPrompt
+                                                            'border-error bg-error-light text-error placeholder:text-error':
+                                                                isEmptyGeneratePromptField
                                                         }
                                                     )}
                                                     autoCapitalize='none'
@@ -522,7 +694,7 @@ export default function Dashboard() {
                         </form>
                     </Form>
 
-                    <section className='overflow-auto border-t border-divider'>
+                    <section className='overflow-auto border-y border-divider'>
                         <TextEditor
                             editorRef={editorRef as RefObject<HTMLDivElement>}
                             value={composeValue}
@@ -537,7 +709,7 @@ export default function Dashboard() {
                                 <Button
                                     variant='clear'
                                     size='clear'
-                                    className='group h-10 w-10 rounded-base-x2 transition-all duration-300 ease-in-out hover:bg-gray-200'
+                                    className='group h-10 w-10 rounded-base-x2 transition-all duration-300 ease-in-out hover:bg-surface-hover'
                                     onClick={clearForwardMessageHandler}
                                 >
                                     <Trash2
@@ -644,7 +816,7 @@ export default function Dashboard() {
                                                             className={cn(
                                                                 'rounded-[4px] border-[2px] border-transparent bg-transparent pl-2 !text-base-body1 font-normal text-text-bold placeholder:text-text-light',
                                                                 {
-                                                                    'border-error bg-error-light':
+                                                                    'border-error bg-error-light text-error placeholder:text-error':
                                                                         isEmptyAddTaskContentField &&
                                                                         isNoValidAddTaskField
                                                                 }
@@ -683,7 +855,7 @@ export default function Dashboard() {
                                                             className={cn(
                                                                 'rounded-[4px] bg-transparent pl-2 !text-base-body1 font-normal text-text-bold placeholder:text-text-light',
                                                                 {
-                                                                    'border-error bg-error-light':
+                                                                    'border-error bg-error-light text-error placeholder:text-error':
                                                                         !isEmptyAddTaskContentField &&
                                                                         isEmptyAddTaskSubContentField &&
                                                                         isNoValidAddTaskField
@@ -731,7 +903,7 @@ export default function Dashboard() {
                                                                 <Button
                                                                     variant='clear'
                                                                     size='clear'
-                                                                    className='flex min-h-9 min-w-9 max-w-9 items-center justify-center hover:bg-gray-100'
+                                                                    className='flex min-h-9 min-w-9 max-w-9 items-center justify-center hover:bg-surface-hover'
                                                                     onClick={() =>
                                                                         addTodoForm.setValue('due', undefined)
                                                                     }

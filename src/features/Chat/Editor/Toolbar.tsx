@@ -13,7 +13,7 @@ import {
     SpellCheck2,
     Underline
 } from 'lucide-react'
-import { RefObject, useEffect, useState } from 'react'
+import { RefObject, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Hint } from '@/shared/components'
 import { cn } from '@/shared/utils'
@@ -39,7 +39,7 @@ export function Toolbar({ editorRef /*loadFile*/ }: IProps) {
         if (!selection || selection.rangeCount === 0) return
 
         const range = selection.getRangeAt(0)
-        let parentElement =
+        let parentElement: any =
             range.commonAncestorContainer.nodeType === 1
                 ? range.commonAncestorContainer
                 : range.commonAncestorContainer.parentNode
@@ -66,7 +66,6 @@ export function Toolbar({ editorRef /*loadFile*/ }: IProps) {
 
         // Если изменяется тип списка (UL -> OL или наоборот)
         if (command === 'insertUnorderedList' || command === 'insertOrderedList') {
-            // @ts-ignore
             const currentList = parentElement?.closest('UL, OL')
             if (currentList) {
                 // Меняем тип списка
@@ -103,14 +102,18 @@ export function Toolbar({ editorRef /*loadFile*/ }: IProps) {
         })
     }
 
+    const fontSizeMap = useMemo(
+        () => ({
+            small: '13px',
+            normal: '16px',
+            large: '20px',
+            huge: '32px'
+        }),
+        []
+    )
+
     // Изменение размера текста
-    const fontSizeMap = {
-        small: '13px',
-        normal: '16px',
-        large: '20px',
-        huge: '32px'
-    }
-    const detectTextSize = () => {
+    const detectTextSize = useCallback(() => {
         const selection = window.getSelection()
         if (!selection || selection.rangeCount === 0) return
 
@@ -132,7 +135,8 @@ export function Toolbar({ editorRef /*loadFile*/ }: IProps) {
                 setTextSize(size) // Устанавливаем текущий размер текста
             }
         }
-    }
+    }, [fontSizeMap])
+
     const handleTextSizeChange = (size: 'small' | 'normal' | 'large' | 'huge') => {
         const selection = window.getSelection()
         if (!selection || selection.rangeCount === 0) {
@@ -218,24 +222,28 @@ export function Toolbar({ editorRef /*loadFile*/ }: IProps) {
 
     const handleToggleEmoji = () => {
         setVisibleEmoji(!visibleEmoji)
-        visibleFormattingOptions && setVisibleFormattingOptions(false)
+        if (visibleFormattingOptions) {
+            setVisibleFormattingOptions(false)
+        }
 
         // tagManageClick('compose_toolbar_emoji')
     }
 
     const handleToggleFormattingOptions = () => {
         setVisibleFormattingOptions(!visibleFormattingOptions)
-        visibleEmoji && setVisibleEmoji(false)
+        if (visibleEmoji) {
+            setVisibleEmoji(false)
+        }
 
         // tagManageClick('compose_toolbar_formatting_options')
     }
+
     useEffect(() => {
-        // Обновляем размер текста при изменении выделения
         document.addEventListener('selectionchange', detectTextSize)
         return () => {
             document.removeEventListener('selectionchange', detectTextSize)
         }
-    }, [])
+    }, [detectTextSize])
 
     return (
         <div className='flex gap-2'>
@@ -332,10 +340,10 @@ export function Toolbar({ editorRef /*loadFile*/ }: IProps) {
             </Hint>
 
             {visibleEmoji && (
-                <div className='border-[0.25px solid #ededed] absolute bottom-[50px] left-10'>
+                <div className='absolute bottom-[50px] left-10'>
                     <Picker
                         data={data}
-                        onEmojiSelect={(emoji: any) => handleEmojiClick(emoji.native)}
+                        onEmojiSelect={(emoji: { native: any }) => handleEmojiClick(emoji.native)}
                         theme='light'
                         perLine={6}
                         previewEmoji='none'

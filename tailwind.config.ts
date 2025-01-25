@@ -53,6 +53,15 @@ const config: Config = {
                     hover: 'var(--icon-hover)',
                     surface: 'var(--icon-surface)'
                 },
+
+                slider: {
+                    DEFAULT: 'var(--slider-track)',
+                    'track-fill': 'var(--slider-track-fill)',
+                    thumb: 'var(--slider-thumb)',
+                    'thumb-outline': 'var(--slider-thumb-outline)',
+                    mark: 'var(--slider-mark)',
+                    'mark-fill': 'var(--slider-mark-fill)'
+                },
                 border: 'var(--border)',
                 surface: {
                     hover: 'var(--surface-hover)',

@@ -1,6 +1,6 @@
 'use client'
 
-import { RefObject, useEffect, useState } from 'react'
+import { RefObject, useCallback, useEffect, useState } from 'react'
 
 import { cn } from '@/shared/utils'
 
@@ -31,17 +31,20 @@ const TextEditor: React.FC<IProps> = ({ editorRef, value, setValue }) => {
         }
     }
 
-    const restoreCaretPosition = (caret: { startContainer: Node; startOffset: number } | null) => {
-        if (!caret || !editorRef.current) return
+    const restoreCaretPosition = useCallback(
+        (caret: { startContainer: Node; startOffset: number } | null) => {
+            if (!caret || !editorRef.current) return
 
-        const selection = window.getSelection()
-        const range = document.createRange()
-        range.setStart(caret.startContainer, caret.startOffset)
-        range.collapse(true)
+            const selection = window.getSelection()
+            const range = document.createRange()
+            range.setStart(caret.startContainer, caret.startOffset)
+            range.collapse(true)
 
-        selection?.removeAllRanges()
-        selection?.addRange(range)
-    }
+            selection?.removeAllRanges()
+            selection?.addRange(range)
+        },
+        [editorRef]
+    )
 
     const handleInput = () => {
         const caret = saveCaretPosition() // Сохраняем позицию каретки
@@ -83,7 +86,7 @@ const TextEditor: React.FC<IProps> = ({ editorRef, value, setValue }) => {
             }
             setIsBlank(editorRef.current.innerHTML.trim() === '')
         }
-    }, [value])
+    }, [value, editorRef, restoreCaretPosition])
 
     return (
         <div

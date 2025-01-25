@@ -3,52 +3,59 @@
     --bg-default: var(--white);
     --bg-dashboard: var(--white);
     --bg-side: var(--gray-100);
-    
+
     --color-white: var(--white);
     --color-black: var(--black);
     --color-blue: var(--sky-500);
-    
+
     --primary: var(--sky-500);
     --secondary: var(--sky-500);
-    
+
     --important: var(--orange);
     --important-light: var(--sky-50);
-    
+
     --info: var(--sky-50);
-    --info-hover: var(--gray-500); 
+    --info-hover: var(--gray-500);
     --info-surface: var(--gray-300);
-    
+
     /* Text Colors */
     --text-default: var(--black);
     --text-ultra-light: var(--gray-400);
     --text-light: var(--gray-500);
     --text-bold: var(--gray-900);
     --text-disabled: var(--gray-300);
-    
+
     /* UI Element Colors */
     --button-default: var(--sky-400);
     --button-hover: var(--sky-500);
     --button-divider: var(--sky-600);
     --button-disabled: var(--gray-300);
-    
-    --divider: var(--gray-300);
-    --divider-light: var(--gray-100);
-    
+
     --icon-default: var(--black);
     --icon-inactive: var(--gray-400);
     --icon-hover: var(--gray-400);
     --icon-surface: var(--gray-100);
 
+    --slider-track: var(--gray-200);
+    --slider-track-fill: var(--gray-700);
+    --slider-thumb: var(--gray-700);
+    --slider-thumb-outline: var(--white);
+    --slider-mark: var(--gray-200);
+    --slider-mark-fill: var(--gray-800);
+
+    --divider: var(--gray-300);
+    --divider-light: var(--gray-100);
+
     --border-default: var(--black);
     --border-input: var(--gray-400);
-    
+
     /* Surface Colors */
     --surface-hover: var(--gray-200);
-    --surface-over-hover: var(--gray-300); 
+    --surface-over-hover: var(--gray-300);
     --surface-disabled: var(--gray-50);
     --surface-dashboard: var(--gray-700);
     --surface-inactive: var(--gray-100);
-    
+
     /* Specific Component Colors */
     --mail-selected: var(--sky-100);
     --counter-zero-new: var(--sky-200);
@@ -56,7 +63,7 @@
     --tooltip: var(--gray-800);
     --star: var(--gray-800);
     --scroll-down-counter: var(--gray-200);
-    
+
     /* Error States */
     --error: var(--red-500);
     --error-light: var(--red-200);
