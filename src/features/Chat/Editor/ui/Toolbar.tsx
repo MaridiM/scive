@@ -18,7 +18,7 @@ import { RefObject, useCallback, useEffect, useMemo, useState } from 'react'
 import { Hint } from '@/shared/components'
 import { cn } from '@/shared/utils'
 
-import stylesToolbar from './styles/toolbar.module.css'
+import stylesToolbar from '../styles/toolbar.module.css'
 
 interface IProps {
     editorRef: RefObject<HTMLDivElement>
@@ -248,16 +248,27 @@ export function Toolbar({ editorRef /*loadFile*/ }: IProps) {
     return (
         <div className='flex gap-2'>
             <Hint asChild side='top' label='Formatting options'>
-                <button className={cn(stylesToolbar.button)} onClick={handleToggleFormattingOptions}>
+                <button
+                    className={cn(
+                        'flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none transition-all duration-300 ease-in-out hover:bg-surface-hover',
+                        {
+                            'bg-surface-hover': visibleFormattingOptions
+                        }
+                    )}
+                    onClick={handleToggleFormattingOptions}
+                >
                     <SpellCheck2 size={20} color={'black'} />
                 </button>
             </Hint>
 
             {visibleFormattingOptions && (
-                <div className={cn(stylesToolbar.buttonsGroup)}>
+                <div
+                    className={cn(
+                        'absolute bottom-11 left-0 z-50 flex items-center gap-2 rounded-base-x2 border-[0.25px] border-gray-200 bg-white p-1 shadow'
+                    )}
+                >
                     <Hint asChild side='top' label='Text size'>
                         <select
-                            className='ql-size'
                             value={textSize}
                             onChange={e =>
                                 handleTextSizeChange(e.target.value as 'normal' | 'small' | 'large' | 'huge')
@@ -286,35 +297,62 @@ export function Toolbar({ editorRef /*loadFile*/ }: IProps) {
                     </Hint>
 
                     <Hint asChild side='top' label='Bold'>
-                        <button className={cn(stylesToolbar.button)} onClick={() => applyFormat('bold')}>
+                        <button
+                            className={cn(
+                                'flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                            )}
+                            onClick={() => applyFormat('bold')}
+                        >
                             <Bold size={20} color={'black'} />
                         </button>
                     </Hint>
                     <Hint asChild side='top' label='Italic'>
-                        <button className={cn(stylesToolbar.button)} onClick={() => applyFormat('italic')}>
+                        <button
+                            className={cn(
+                                'flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                            )}
+                            onClick={() => applyFormat('italic')}
+                        >
                             <Italic size={20} color={'black'} />
                         </button>
                     </Hint>
                     <Hint asChild side='top' label='Underline'>
-                        <button className={cn(stylesToolbar.button)} onClick={() => applyFormat('underline')}>
+                        <button
+                            className={cn(
+                                'flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                            )}
+                            onClick={() => applyFormat('underline')}
+                        >
                             <Underline size={20} color={'black'} />
                         </button>
                     </Hint>
                     <Hint asChild side='top' label='Blockquote'>
                         <button
-                            className={cn(stylesToolbar.button)}
+                            className={cn(
+                                'flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                            )}
                             onClick={() => applyFormat('formatBlock', 'blockquote')}
                         >
                             <MessageSquareQuote size={20} color={'black'} />
                         </button>
                     </Hint>
                     <Hint asChild side='top' label='List'>
-                        <button className={cn(stylesToolbar.button)} onClick={() => applyFormat('insertUnorderedList')}>
+                        <button
+                            className={cn(
+                                'flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                            )}
+                            onClick={() => applyFormat('insertUnorderedList')}
+                        >
                             <List size={20} color={'black'} />
                         </button>
                     </Hint>
                     <Hint asChild side='top' label='List Ordered'>
-                        <button className={cn(stylesToolbar.button)} onClick={() => applyFormat('insertOrderedList')}>
+                        <button
+                            className={cn(
+                                'flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                            )}
+                            onClick={() => applyFormat('insertOrderedList')}
+                        >
                             <ListOrdered size={20} color={'black'} />
                         </button>
                     </Hint>
@@ -322,19 +360,31 @@ export function Toolbar({ editorRef /*loadFile*/ }: IProps) {
             )}
 
             <Hint asChild side='top' label='Insert emoji'>
-                <button className={cn(stylesToolbar.button)} onClick={handleToggleEmoji}>
+                <button
+                    className={cn(
+                        'flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none transition-all duration-300 ease-in-out hover:bg-surface-hover',
+                        {
+                            'bg-surface-hover': visibleEmoji
+                        }
+                    )}
+                    onClick={handleToggleEmoji}
+                >
                     <SmilePlus size={20} color={'black'} />
                 </button>
             </Hint>
 
             {/* <Hint asChild side='top' label='Attach files'>
-                <button className={cn(stylesToolbar.button)} onClick={pickFile}>
+                <button className={cn('transition-all duration-300 ease-in-out flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none hover:bg-surface-hover')} onClick={pickFile}>
                     <Paperclip size={20} color='black' />
                 </button>
             </Hint> */}
 
             <Hint asChild side='top' label='Spellchecking'>
-                <button className={cn(stylesToolbar.button)}>
+                <button
+                    className={cn(
+                        'flex h-10 w-10 cursor-pointer items-center justify-center rounded-base-x2 border-none bg-none outline-none transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                    )}
+                >
                     <GraduationCap size={20} color='black' />
                 </button>
             </Hint>

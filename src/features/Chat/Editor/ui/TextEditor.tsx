@@ -4,7 +4,7 @@ import { RefObject, useCallback, useEffect, useState } from 'react'
 
 import { cn } from '@/shared/utils'
 
-import './styles/editor.css'
+import '../styles/editor.css'
 
 // import { IComposeType, IMessageFormName } from '@/shared/store/types'
 
@@ -12,12 +12,11 @@ interface IProps {
     editorRef: RefObject<HTMLDivElement>
     value: string
     setValue: (value: string) => void
-    // setValue: (name: string, value: string, type: string) => void
     // setValue: (name: IMessageFormName, value: string, type: IComposeType) => void
     // type: string
 }
 
-const TextEditor: React.FC<IProps> = ({ editorRef, value, setValue }) => {
+const TextEditor: React.FC<IProps> = ({ editorRef, value = '', setValue }) => {
     const [isBlank, setIsBlank] = useState(true)
 
     const saveCaretPosition = () => {

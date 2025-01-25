@@ -2,7 +2,7 @@
 
 import { Slot } from '@radix-ui/react-slot'
 import { type VariantProps, cva } from 'class-variance-authority'
-import { ButtonHTMLAttributes, forwardRef } from 'react'
+import { ButtonHTMLAttributes, MouseEvent, forwardRef } from 'react'
 
 import { cn } from '@/shared/utils'
 
@@ -35,9 +35,20 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, Va
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, onClick, ...props }, ref) => {
+        function handleClick(event: MouseEvent<HTMLButtonElement>) {
+            event.preventDefault()
+            onClick?.(event)
+        }
         const Comp = asChild ? Slot : 'button'
-        return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+        return (
+            <Comp
+                className={cn(buttonVariants({ variant, size, className }))}
+                onClick={handleClick}
+                ref={ref}
+                {...props}
+            />
+        )
     }
 )
 Button.displayName = 'Button'
