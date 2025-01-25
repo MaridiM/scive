@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { HeaderChat } from "./HeaderChat";
 import {CHAT_MESSAGES} from '@/enitites/api/chat'
-import { ChatContent } from "./ChatContent";
+
 
 
 
@@ -30,7 +30,7 @@ export const MailChat:FC<IProps> = ({thread})=>{
     return(
         <div>
             <HeaderChat thread={data} />
-            <ChatContent />
+           
 
         </div>
     )

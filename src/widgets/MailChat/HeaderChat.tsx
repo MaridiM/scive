@@ -9,18 +9,6 @@ import RelatedConversation from './RelativeConversation'
 
 
 
-// import {
-//     Table,
-
-//     TableBody,
-//     TableCaption,
-//     TableCell,
-//     TableFooter,
-//     TableHead,
-//     TableHeader,
-//     TableRow,
-//   } from "@/components/ui/table"
-
 interface IMessage {
     name: string
     email: string
