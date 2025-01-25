@@ -3,7 +3,7 @@
     line-height: 150%;
     min-height: 100%;
     outline: none;
-    overflow: hidden;
+    /* overflow: hidden; */
     tab-size: 4;
     -moz-tab-size: 4;
     text-align: left;

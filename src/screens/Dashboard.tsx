@@ -7,20 +7,18 @@ import {
     CheckCircle,
     Circle,
     CircleCheckBig,
-    Clock4,
-    MoveDown,
     MoveUp,
     PencilLine,
     Plus,
     PlusCircle,
     Star,
-    Trash2,
     Wand2,
     X
 } from 'lucide-react'
-import { MouseEvent, RefObject, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useKey, useWindowSize } from 'react-use'
+import { Letter } from 'react-letter'
+import { useKey } from 'react-use'
 import { z } from 'zod'
 
 import {
@@ -35,16 +33,26 @@ import {
     PopoverContent,
     PopoverTrigger,
     SearchInput,
-    Slider,
-    Typography
+    Typography,
+    UserAvatar
 } from '@/shared/components'
 import { Calendar } from '@/shared/components/ui/Calendar'
 import { useTextSize } from '@/shared/hooks'
+import { useStore } from '@/shared/libs'
 import { cn, parseStringToList } from '@/shared/utils'
 
-import { DIGESTS, DIGEST_TAGS, HIGHLIGHTS, MESSAGE_DETAILS, TODO_DASHBOARD, TODO_SUGGESTIONS } from '@/enitites/api'
+import {
+    CHAT_MESSAGES,
+    DIGESTS,
+    DIGEST_TAGS,
+    HIGHLIGHTS,
+    MESSAGE_DETAILS,
+    THREADS,
+    TODO_DASHBOARD,
+    TODO_SUGGESTIONS
+} from '@/enitites/api'
 // import { THREADS } from '@/enitites/api/threads'
-import { TextEditor, Toolbar } from '@/features'
+import { Editor, GenerateMessage } from '@/features'
 import { Widget } from '@/widgets'
 
 type TTodoSuggestionsFilterKey = 'new' | 'due' | 'favorite'
@@ -55,29 +63,16 @@ const addTodoFormSchema = z.object({
     due: z.date().optional(),
     is_favorite: z.boolean()
 })
-const generateComposeFormSchema = z.object({
-    prompt: z.string().min(1),
-    max_words: z.number().default(0),
-    tonality: z.number().default(0)
-})
 
 type TAddTodoFormSchema = z.infer<typeof addTodoFormSchema>
-type TGenerateComposeFormSchema = z.infer<typeof generateComposeFormSchema>
-
-const tonality = ['FRIENDLY', 'NEUTRAL', 'PROFESSIONAL', 'FORMAL']
-const maxWords = [50, 150, 300, 500]
 
 export default function Dashboard() {
     const [showAddTaskPopover, setShowAddTaskPopover] = useState<boolean>(false)
     const [showPopoverCalendar, setShowPopoverCalendar] = useState<boolean>(false)
 
-    const [showChatCompose, setShowChatCompose] = useState<'min' | 'max'>('max')
-
     const [isNoValidAddTaskField, setIsNoValidAddTaskField] = useState<boolean>(false)
     const [isEmptyAddTaskContentField, setIsEmptyAddTaskContentField] = useState<boolean>(false)
     const [isEmptyAddTaskSubContentField, setIsEmptyAddTaskSubContentField] = useState<boolean>(false)
-
-    const [isEmptyGeneratePromptField, setIsEmptyGeneratePromptField] = useState<boolean>(false)
 
     const addTodoForm = useForm<TAddTodoFormSchema>({
         resolver: zodResolver(addTodoFormSchema),
@@ -88,14 +83,6 @@ export default function Dashboard() {
             due: undefined
         }
     })
-    const generateComposeForm = useForm<TGenerateComposeFormSchema>({
-        resolver: zodResolver(generateComposeFormSchema),
-        defaultValues: {
-            prompt: '',
-            max_words: 0,
-            tonality: 0
-        }
-    })
 
     const [filterTodoSuggestion, setFilterTodoSuggestion] = useState<TTodoSuggestionsFilterKey>('new')
     const [isFavorite, setIsFavorite] = useState<boolean>(false)
@@ -104,8 +91,9 @@ export default function Dashboard() {
     const [readDigestItemIds, setReadDigestItemIds] = useState<Array<number>>([])
     const [selectedDigestId, setSelectedDigestId] = useState<number | null>(null)
 
-    const { textSize, large, small } = useTextSize()
-    const { width } = useWindowSize()
+    const { showChatCompose, setShowChatCompose } = useStore()
+
+    const { textSize } = useTextSize()
 
     const [isHoveredId, setIsHoveredId] = useState<string | null>(null)
 
@@ -279,62 +267,20 @@ export default function Dashboard() {
 
     // content: THREADS[5].messages[0].html
 
-    function clearForwardMessageHandler() {
-        console.log('clearForwardMessageHandler')
-        // setIsForwardAll(false)
-        // setShowCompose()
-        // tagManageClick('compose_delete_forward_context')
-    }
-    function sendMessageHandler() {
-        console.log('sendMessageHandler')
+    function showChatComposeHandler() {
+        setShowChatCompose(showChatCompose === 'max' ? 'min' : 'max')
+        // tagManageClick('compose_move_up_down')
+        // setChatType(type)
     }
 
-    const editorRef = useRef<HTMLDivElement>(null)
-    // const [files, setFiles] = useState<DocumentPicker.DocumentPickerAsset[]>([])
-    // const loadFile = (file: DocumentPicker.DocumentPickerAsset) => {
-    //     setFiles([...files, file])
-    // }
-    const [composeValue, setComposeValue] = useState('')
+    const messagesRef = useRef<HTMLDivElement | null>(null)
 
     useEffect(() => {
-        const { dirtyFields } = generateComposeForm.formState
-
-        const isPromptValid = dirtyFields.prompt
-
-        if (isPromptValid) {
-            setIsEmptyGeneratePromptField(false)
+        // После каждого изменения массива messages скроллимся к низу
+        if (messagesRef.current) {
+            messagesRef.current.scrollTop = messagesRef.current.scrollHeight
         }
-
-        if (isEmptyGeneratePromptField) {
-            setTimeout(() => setIsEmptyGeneratePromptField(false), 3000)
-        }
-    }, [generateComposeForm.formState, isEmptyGeneratePromptField])
-
-    function generateComposeMessage(event: MouseEvent<HTMLButtonElement>) {
-        event.preventDefault()
-
-        const { dirtyFields } = generateComposeForm.formState
-
-        const isPromptValid = dirtyFields.prompt
-
-        if (isPromptValid) {
-            const prompt = {
-                ...generateComposeForm.getValues(),
-                max_words: maxWords[generateComposeForm.getValues().max_words],
-                tonality: tonality[generateComposeForm.getValues().tonality]
-            }
-            console.log('prompt', prompt)
-            setIsEmptyGeneratePromptField(false)
-        } else {
-            setIsEmptyGeneratePromptField(!isPromptValid)
-        }
-    }
-
-    function changeTextSise(textSize: 'large' | 'small') {
-        textSize === 'large' && large()
-        textSize === 'small' && small()
-        // tagManageClick(`compose_text_size_${textSize}`)
-    }
+    }, [CHAT_MESSAGES[0].messages])
 
     return (
         <div className='grid flex-1 grid-cols-[minmax(440px,640px)_minmax(576px,auto)_minmax(320px,480px)] gap-1'>
@@ -520,226 +466,114 @@ export default function Dashboard() {
                 </Widget>
             </aside>
 
-            <section className='border-devider grid grid-rows-[auto_minmax(100px,420px)] gap-base-x2 border-x-[1px] bg-white'>
-                <section className='flex flex-col bg-green-900'>CHAT</section>
-                <section className='grid grid-rows-[auto_264px_40px] flex-col gap-1 border-t border-divider p-4'>
-                    <Form {...generateComposeForm}>
-                        <form className='flex flex-col gap-1'>
-                            <div className='flex h-9 w-full items-center justify-between'>
-                                <div className='flex h-9 gap-4'>
-                                    <FormField
-                                        control={generateComposeForm.control}
-                                        name='max_words'
-                                        render={({ field }) => (
-                                            <FormItem className='flex w-full min-w-[132px] max-w-[132px] flex-col items-center'>
-                                                <FormControl className='m-auto w-full'>
-                                                    <div className='flex flex-col gap-1'>
-                                                        <div className='flex w-full justify-between'>
-                                                            <span className='text-base-body5 font-medium text-text-ultra-light'>
-                                                                Short
-                                                            </span>
-                                                            <span className='text-base-body5 font-medium text-text-ultra-light'>
-                                                                Long
-                                                            </span>
-                                                        </div>
-                                                        <div className='relative'>
-                                                            <Slider
-                                                                {...field}
-                                                                defaultValue={[0]}
-                                                                max={3}
-                                                                min={0}
-                                                                step={1}
-                                                                value={[field.value]}
-                                                                onValueChange={(value: number[]) => (
-                                                                    field.onChange(value), console.log(value)
-                                                                )}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={generateComposeForm.control}
-                                        name='tonality'
-                                        render={({ field }) => (
-                                            <FormItem className='flex w-full min-w-[132px] max-w-[132px] flex-col items-center'>
-                                                <FormControl className='m-auto w-full'>
-                                                    <div className='flex flex-col gap-1'>
-                                                        <div className='flex w-full justify-between'>
-                                                            <span className='text-base-body5 font-medium text-text-ultra-light'>
-                                                                Friendly
-                                                            </span>
-                                                            <span className='text-base-body5 font-medium text-text-ultra-light'>
-                                                                Professional
-                                                            </span>
-                                                        </div>
-                                                        <div className='relative'>
-                                                            <Slider
-                                                                {...field}
-                                                                defaultValue={[0]}
-                                                                max={3}
-                                                                min={0}
-                                                                step={1}
-                                                                value={[field.value]}
-                                                                onValueChange={(value: number[]) => (
-                                                                    field.onChange(value), console.log(value)
-                                                                )}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+            <section
+                className={cn('border-devider grid grid-rows-[auto_64px] gap-base-x2 border-x-[1px] bg-white', {
+                    'grid-rows-[auto_420px]': showChatCompose === 'max'
+                })}
+            >
+                {/* <section className='max-h-[calc(100vh-578px)]] flex flex-col overflow-hidden bg-green-900 pb-2 pt-5'> */}
+                {/* <section className='grid grid-rows-[130px_auto] overflow-hidden bg-green-900 pb-2 pt-5'> */}
+                <section
+                    className={cn('flex max-h-[calc(100vh-108px)] flex-col overflow-hidden pb-2 pt-5', {
+                        'grid-rows-[auto_420px]': showChatCompose === 'max'
+                    })}
+                >
+                    <header className='w-full'>
+                        <div className='flex h-[36px] w-full items-center bg-red-200'>PAGINATION</div>
+                        <div className='flex h-[47px] w-full items-center bg-sky-200'>SENDER</div>
+                        <div className='flex h-[47px] w-full items-center bg-green-200'>TITLE</div>
+                    </header>
 
-                                <div className='flex gap-4'>
-                                    {width > 1440 && (
-                                        <div className='flex gap-2'>
-                                            <Hint side='top' label='Small' asChild>
-                                                <Button
-                                                    variant='clear'
-                                                    size='clear'
-                                                    onClick={() => changeTextSise('small')}
-                                                    className={cn(
-                                                        'flex h-[36px] w-[36px] items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out',
-                                                        { 'bg-surface-hover': textSize === 'small' }
-                                                    )}
-                                                >
-                                                    <Typography
-                                                        variant='body'
-                                                        className='!text-base-body2 font-normal text-black'
-                                                    >
-                                                        Aa
-                                                    </Typography>
-                                                </Button>
-                                            </Hint>
-                                            <Hint side='top' label='Large' asChild>
-                                                <Button
-                                                    variant='clear'
-                                                    size='clear'
-                                                    onClick={() => changeTextSise('large')}
-                                                    className={cn(
-                                                        'flex h-[36px] w-[36px] items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out',
-                                                        { 'bg-surface-hover': textSize === 'large' }
-                                                    )}
-                                                >
-                                                    <Typography variant='h4' className='font-normal !text-black'>
-                                                        Aa
-                                                    </Typography>
-                                                </Button>
-                                            </Hint>
-                                        </div>
-                                    )}
-                                    <Hint side='top' label={showChatCompose === 'max' ? 'Minimize' : 'Expand'}>
-                                        <Button
-                                            variant='clear'
-                                            size='clear'
-                                            className='flex h-base-x9 w-base-x9 items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out hover:bg-surface-hover'
-                                            // onPress={() => {
-                                            //     tagManageClick('compose_move_up_down'),
-                                            //         (setSize(size === 'max' ? 'min' : 'max'), setChatType(type))
-                                            // }}
+                    <section
+                        ref={messagesRef}
+                        className={cn('flex max-h-[679px] flex-col gap-6 overflow-y-auto overflow-x-hidden px-4 py-5', {
+                            'max-h-[323px]': showChatCompose === 'max'
+                        })}
+                    >
+                        {CHAT_MESSAGES[0].messages.map((message, idx) => {
+                            const senderIsMe = message.metadata.from_ === 'dmytro.marynenko@scive.ai'
+
+                            const formatMessageGroup =
+                                idx > 0 &&
+                                format(message.metadata.created_at, 'd MMMM') ===
+                                    format(CHAT_MESSAGES[0].messages[idx - 1].metadata.created_at || '', 'd MMMM')
+
+                            return (
+                                <article key={message.metadata.id} className='flex flex-col gap-2'>
+                                    {!formatMessageGroup && (
+                                        <Typography
+                                            variant='body'
+                                            className='w-full py-2 text-center font-medium text-text-bold'
                                         >
-                                            {showChatCompose === 'max' ? (
-                                                <MoveDown size={20} className='stroke-black' />
-                                            ) : (
-                                                <MoveUp size={20} className='stroke-black' />
-                                            )}
-                                        </Button>
-                                    </Hint>
-                                </div>
+                                            {format(message.metadata.created_at, 'd MMMM')}
+                                        </Typography>
+                                    )}
+
+                                    {!senderIsMe && <UserAvatar username={THREADS[5].messages[0].metadata.from_[0]} />}
+
+                                    <div className={cn('w-fit', { 'ml-auto': senderIsMe })}>
+                                        <Letter
+                                            className={cn('w-fit max-w-[701] rounded-base-x2 bg-surface-inactive p-2', {
+                                                'bg-message-outcoming': senderIsMe
+                                            })}
+                                            html={message.html ?? message.plain ?? message.metadata.snippet ?? ''}
+                                        />
+                                        {/* {!message.html && message.plain && message.plain} */}
+                                        {/* {!message.html && !message.plain && message.metadata.snippet} */}
+                                        <Typography
+                                            variant='body'
+                                            className={cn('pl-base-x2 pr-base-x2 text-text-light')}
+                                        >
+                                            <Typography>{format(message.metadata.created_at, 'MMM d')}</Typography>
+                                        </Typography>
+                                    </div>
+                                </article>
+                            )
+                        })}
+                    </section>
+                </section>
+
+                <section className='grid grid-rows-[auto_304px] gap-1 border-t border-divider p-4'>
+                    {showChatCompose === 'max' ? (
+                        <>
+                            <GenerateMessage />
+                            <Editor />
+                        </>
+                    ) : (
+                        <div
+                            className='flex h-9 w-full cursor-pointer items-center justify-between'
+                            onClick={showChatComposeHandler}
+                        >
+                            <div className='flex h-9 w-full items-center'>
+                                <Typography variant='body' className='!text-text-disabled'>
+                                    Type to quick respond or use Scive power...
+                                </Typography>
                             </div>
 
-                            <FormField
-                                control={generateComposeForm.control}
-                                name='prompt'
-                                render={({ field }) => (
-                                    <FormItem className='flex w-full flex-col items-center'>
-                                        <FormControl className='w-full'>
-                                            <div className='flex h-[36] w-full items-center justify-start gap-4 border-none text-base-body'>
-                                                <Input
-                                                    className={cn(
-                                                        'h-9 w-full rounded-[4px] border-[2px] border-transparent bg-transparent px-3 text-base-body text-text-bold outline-none placeholder:text-text-disabled',
-                                                        {
-                                                            'border-error bg-error-light text-error placeholder:text-error':
-                                                                isEmptyGeneratePromptField
-                                                        }
-                                                    )}
-                                                    autoCapitalize='none'
-                                                    autoFocus={true}
-                                                    placeholder='Ask AI to write answer...'
-                                                    {...field}
-                                                />
-                                                <Hint label='Generate' side='top' asChild>
-                                                    <Button
-                                                        variant='clear'
-                                                        size='clear'
-                                                        onClick={generateComposeMessage}
-                                                        className='group h-9 w-9 items-center justify-center rounded-none'
-                                                    >
-                                                        <Wand2
-                                                            size={24}
-                                                            className='stroke-black stroke-2 transition-all duration-300 ease-in-out group-hover:stroke-button'
-                                                        />
-                                                    </Button>
-                                                </Hint>
-                                            </div>
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                        </form>
-                    </Form>
-
-                    <section className='overflow-auto border-y border-divider'>
-                        <TextEditor
-                            editorRef={editorRef as RefObject<HTMLDivElement>}
-                            value={composeValue}
-                            setValue={setComposeValue} /*type={type}*/
-                        />
-                    </section>
-
-                    <footer className='relative flex items-center justify-between'>
-                        <Toolbar editorRef={editorRef as RefObject<HTMLDivElement>} /*loadFile={loadFile}*/ />
-                        <div className='flex gap-2'>
-                            <Hint label='Discard draft' side='top' asChild>
-                                <Button
-                                    variant='clear'
-                                    size='clear'
-                                    className='group h-10 w-10 rounded-base-x2 transition-all duration-300 ease-in-out hover:bg-surface-hover'
-                                    onClick={clearForwardMessageHandler}
-                                >
-                                    <Trash2
-                                        size={20}
-                                        className='stroke-black stroke-[1.5px] transition-all duration-300 ease-in-out group-hover:stroke-2'
-                                    />
-                                </Button>
-                            </Hint>
-                            <div className='flex'>
-                                <Hint label='Send Message' side='top' asChild>
+                            <div className='flex gap-4'>
+                                <Hint side='top' label={/*showChatCompose === 'max' ? 'Minimize' :*/ 'Expand'} asChild>
                                     <Button
-                                        className='rounded-r-none bg-button pb-base-x2 pl-base-x8 pr-base-x12 pt-base-x2 hover:bg-button-hover'
-                                        onClick={sendMessageHandler}
+                                        variant='clear'
+                                        size='clear'
+                                        className='flex h-base-x9 w-base-x9 items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out hover:bg-surface-hover'
+                                        // onClick={showChatComposeHandler}
                                     >
-                                        <Typography variant='body' className=''>
-                                            Send
-                                        </Typography>
-                                    </Button>
-                                </Hint>
-                                <Hint label='Schedule send' side='top' asChild>
-                                    <Button
-                                        className='rounded-l-none border-l border-gray-500 bg-button px-base-x3 hover:bg-button-hover'
-                                        onClick={() => console.log('Shedule send message')}
-                                    >
-                                        <Clock4 size={20} className='stroke-white' />
+                                        {/* {showChatCompose === 'max' ? (
+                                            <MoveDown size={20} className='stroke-black' />
+                                        ) : ( */}
+                                        <MoveUp size={20} className='stroke-black' />
+                                        {/* )} */}
                                     </Button>
                                 </Hint>
                             </div>
                         </div>
-                    </footer>
+                    )}
+                    {/* {
+                         showChatCompose === 'max' && (
+                             <Editor />
+
+                         )
+                    } */}
                 </section>
             </section>
 

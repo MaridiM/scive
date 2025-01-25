@@ -72,7 +72,7 @@ const config: Config = {
                 },
                 'mail-selected': 'var(--mail-selected)',
                 'counter-zero-new': 'var(--counter-zero-new)',
-                'message-outgoing': 'var(--message-outgoing)',
+                'message-outcoming': 'var(--message-outcoming)',
                 tooltip: 'var(--tooltip)',
                 star: 'var(--star)',
                 scroll: 'var(--scroll-down-counter)',

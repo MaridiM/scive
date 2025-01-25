@@ -59,7 +59,7 @@
     /* Specific Component Colors */
     --mail-selected: var(--sky-100);
     --counter-zero-new: var(--sky-200);
-    --message-outgoing: var(--sky-200);
+    --message-outcoming: var(--sky-200);
     --tooltip: var(--gray-800);
     --star: var(--gray-800);
     --scroll-down-counter: var(--gray-200);
