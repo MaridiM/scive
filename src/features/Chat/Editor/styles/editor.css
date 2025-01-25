@@ -1,0 +1,58 @@
+.editor {
+    box-sizing: border-box;
+    line-height: 150%;
+    min-height: 100%;
+    outline: none;
+    overflow: hidden;
+    tab-size: 4;
+    -moz-tab-size: 4;
+    text-align: left;
+    /* white-space: pre-wrap; */
+    word-wrap: break-word;
+    color: #111827;
+    padding: 12px;
+}
+
+.editor:focus-visible {
+    outline: none;
+}
+
+.editor>* {
+    cursor: text;
+}
+
+.editor p,
+.editor h1,
+.editor h2,
+.editor h3,
+.editor h4,
+.editor h5,
+.editor h6 {
+    margin: 0;
+    padding: 0;
+    counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
+}
+
+.editor blockquote {
+    border-left: 4px solid #ccc;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding-left: 16px;
+
+}
+
+.editor.custom-blank::before {
+    color: #D1D5DB;
+    font-size: 16px;
+    font-weight: 400;
+    content: attr(data-placeholder);
+    pointer-events: none;
+    font-weight: 400;
+    left: 12px;
+    position: absolute;
+}
+
+.editor.custom-blank::before {
+    font-weight: 400;
+    color: #D1D5DB;
+}
