@@ -5,6 +5,8 @@ import { format } from 'date-fns'
 import {
     CalendarIcon,
     CheckCircle,
+    ChevronLeft,
+    ChevronRight,
     Circle,
     CircleCheckBig,
     MoveUp,
@@ -39,7 +41,15 @@ import { useTextSize } from '@/shared/hooks'
 import { useStore } from '@/shared/libs'
 import { cn, parseStringToList } from '@/shared/utils'
 
-import { DIGESTS, DIGEST_TAGS, HIGHLIGHTS, MESSAGE_DETAILS, TODO_DASHBOARD, TODO_SUGGESTIONS } from '@/enitites/api'
+import {
+    DIGESTS,
+    DIGEST_TAGS,
+    HIGHLIGHTS,
+    MESSAGE_DETAILS,
+    THREADS,
+    TODO_DASHBOARD,
+    TODO_SUGGESTIONS
+} from '@/enitites/api'
 import { Messages } from '@/enitites/ui'
 import { Editor, GenerateMessage } from '@/features'
 import { Widget } from '@/widgets'
@@ -62,6 +72,11 @@ export default function Dashboard() {
     const [isNoValidAddTaskField, setIsNoValidAddTaskField] = useState<boolean>(false)
     const [isEmptyAddTaskContentField, setIsEmptyAddTaskContentField] = useState<boolean>(false)
     const [isEmptyAddTaskSubContentField, setIsEmptyAddTaskSubContentField] = useState<boolean>(false)
+
+    const [activeArrow, setActiveArrow] = useState<'prev' | 'next' | 'all' | ''>('')
+    const [currentThread, setCurrentThread] = useState<number>(1)
+
+    const [isImportant, setIsImportant] = useState(false)
 
     const addTodoForm = useForm<TAddTodoFormSchema>({
         resolver: zodResolver(addTodoFormSchema),
@@ -98,7 +113,7 @@ export default function Dashboard() {
     const selectedDigestItem = (id: number) => {
         console.log('selecteDigestItem', id)
 
-        setReadDigestItemIds(prew => [...prew, id])
+        setReadDigestItemIds(prev => [...prev, id])
         setSelectedDigestId(id)
 
         // if (!selectMessage) return
@@ -254,13 +269,61 @@ export default function Dashboard() {
     useKey('Escape', cancelCreateTask)
     useKey('Enter', event => createNewTask(event))
 
-    // content: THREADS[5].messages[0].html
-
     function showChatComposeHandler() {
         setShowChatCompose(showChatCompose === 'max' ? 'min' : 'max')
         // tagManageClick('compose_move_up_down')
         // setChatType(type)
     }
+
+    const uniqueThreadIds = [1, 2, 3] // EXAMPLE
+
+    function checkCurrentConversation(current: number, total: number) {
+        if (total <= 1) return setActiveArrow('')
+        if (current === 1) return setActiveArrow('next')
+        if (current === total) return setActiveArrow('prev')
+
+        return setActiveArrow('all')
+    }
+
+    useEffect(() => {
+        checkCurrentConversation(currentThread, uniqueThreadIds.length)
+    }, [currentThread, uniqueThreadIds])
+
+    function setChangeCurrentThread(arrowState: 'prev' | 'next') {
+        setCurrentThread(prev => {
+            if (uniqueThreadIds.length === 0) return prev
+
+            if (arrowState === 'next') {
+                return prev < uniqueThreadIds.length ? prev + 1 : uniqueThreadIds.length
+            } else {
+                return prev > 1 ? prev - 1 : 1
+            }
+        })
+    }
+
+    function handleChangeThreads(arrowState: 'prev' | 'next') {
+        setChangeCurrentThread(arrowState)
+        // tagManageClick(`thread_${arrowState}_dashboard`)
+
+        // fetchDigestThread()
+        // clearSendMessageForm()
+        // clearComposePrompt()
+        // setCreateDraft(true)
+    }
+
+    const threadMessages = THREADS[0].messages[0]
+    const titleLong = threadMessages.metadata.from_
+    const titleName = titleLong.replace(/^"(.*?)".*$/, '$1')
+    const titleEmail = titleLong.replace(/^.*<([^>]+)>$/, '<$1>')
+
+    function isImportantThreadHandler() {
+        setIsImportant(!isImportant)
+        // tagManageClick('thread_important_dashboard')
+    }
+
+    const tooltipContent = isImportant
+        ? 'Click to teach Scive this conversation is not important'
+        : 'Click to teach Scive this conversation is important'
 
     return (
         <div className='grid flex-1 grid-cols-[minmax(440px,640px)_minmax(576px,auto)_minmax(320px,480px)] gap-1'>
@@ -456,10 +519,121 @@ export default function Dashboard() {
                         'grid-rows-[auto_420px]': showChatCompose === 'max'
                     })}
                 >
-                    <header className='w-full'>
-                        <div className='flex h-[36px] w-full items-center bg-red-200'>PAGINATION</div>
-                        <div className='flex h-[47px] w-full items-center bg-sky-200'>SENDER</div>
-                        <div className='flex h-[47px] w-full items-center bg-green-200'>TITLE</div>
+                    <header className='w-full border-b border-divider'>
+                        <div className='flex h-[36px] w-full items-center px-5'>
+                            <section className='flex w-full items-center justify-between'>
+                                <Typography
+                                    variant='h3'
+                                    className='cursor-default text-base-h3 font-normal !text-text-light'
+                                >
+                                    Related Conversations
+                                </Typography>
+
+                                <div className='flex items-center justify-between gap-2'>
+                                    <Typography
+                                        variant='body'
+                                        className={cn('cursor-default px-4 text-base-body3 !text-text-ultra-light')}
+                                    >
+                                        {currentThread} of {uniqueThreadIds.length}
+                                    </Typography>
+                                    <Hint aling='start' side='bottom' label='Previous' asChild>
+                                        <Button
+                                            variant='clear'
+                                            size='clear'
+                                            className={cn(
+                                                'h-9 w-9 rounded-md transition-all duration-300 ease-in-out',
+                                                {
+                                                    'hover:bg-surface-hover': activeArrow.length && currentThread !== 1
+                                                }
+                                            )}
+                                            onClick={activeArrow.length ? () => handleChangeThreads('prev') : undefined}
+                                        >
+                                            <ChevronLeft
+                                                size={24}
+                                                className={cn('stroke-black', {
+                                                    'stroke-icon-inactive':
+                                                        activeArrow !== 'prev' && activeArrow !== 'all'
+                                                })}
+                                            />
+                                        </Button>
+                                    </Hint>
+                                    <Hint aling='start' side='bottom' label='Next' asChild>
+                                        <Button
+                                            variant='clear'
+                                            size='clear'
+                                            className={cn(
+                                                'h-9 w-9 rounded-md transition-all duration-300 ease-in-out',
+                                                {
+                                                    'hover:bg-surface-hover': activeArrow.length && currentThread !== 1
+                                                }
+                                            )}
+                                            onClick={activeArrow.length ? () => handleChangeThreads('next') : undefined}
+                                        >
+                                            <ChevronRight
+                                                size={24}
+                                                className={cn('stroke-black', {
+                                                    'stroke-icon-inactive':
+                                                        activeArrow !== 'next' && activeArrow !== 'all'
+                                                })}
+                                            />
+                                        </Button>
+                                    </Hint>
+                                </div>
+                            </section>
+                        </div>
+                        <div className='flex h-[47px] w-full items-center gap-4 border-y border-divider pl-5 pr-8'>
+                            <Hint side='top' label={titleName} asChild>
+                                <Typography
+                                    variant='button-default'
+                                    className='relative cursor-default !font-bold !text-text-bold'
+                                    nowrap
+                                >
+                                    {titleName}
+                                </Typography>
+                            </Hint>
+                            <Hint side='top' label={titleEmail} asChild>
+                                <Typography nowrap variant='calout' className='cursor-default !text-text-light'>
+                                    {titleEmail}
+                                </Typography>
+                            </Hint>
+                            <Typography
+                                variant='label-date'
+                                className='!text-normal ml-auto min-w-fit cursor-default !text-black'
+                            >
+                                {format(threadMessages.metadata.created_at || '', 'MMM d')}
+                            </Typography>
+                        </div>
+                        <div className='flex h-[47px] w-full items-center gap-4 px-5'>
+                            <Typography
+                                variant='h4'
+                                nowrap
+                                className='cursor-default !font-bold leading-7 !text-text-bold'
+                            >
+                                {threadMessages.metadata.subject}
+                            </Typography>
+
+                            <Hint side='top' label={tooltipContent} asChild>
+                                <Button
+                                    variant='clear'
+                                    size='clear'
+                                    className='ml-auto h-9 w-9'
+                                    onClick={isImportantThreadHandler}
+                                >
+                                    <svg
+                                        xmlns='http://www.w3.org/2000/svg'
+                                        width='15'
+                                        height='14'
+                                        viewBox='0 0 15 14'
+                                        fill='none'
+                                    >
+                                        <path
+                                            d='M3.50749 6.47364L0.444886 1.52635C0.0324821 0.860163 0.511644 0 1.29515 0H9.29817C9.63252 0 9.94475 0.1671 10.1302 0.445298L14.1302 6.4453C14.3542 6.7812 14.3542 7.2188 14.1302 7.5547L10.1302 13.5547C9.94475 13.8329 9.63252 14 9.29817 14H1.29515C0.511642 14 0.0324822 13.1398 0.444886 12.4736L3.50749 7.52635C3.70714 7.20385 3.70714 6.79615 3.50749 6.47364Z'
+                                            fill={isImportant ? '#FDBA74' : '#D1D5DB'}
+                                        />
+                                    </svg>
+                                </Button>
+                            </Hint>
+                        </div>
                     </header>
 
                     <Messages />
@@ -500,12 +674,6 @@ export default function Dashboard() {
                             </div>
                         </div>
                     )}
-                    {/* {
-                         showChatCompose === 'max' && (
-                             <Editor />
-
-                         )
-                    } */}
                 </section>
             </section>
 
@@ -513,7 +681,7 @@ export default function Dashboard() {
                 {/* <Widget className='flex flex-col bg-red-300' title='To-Do list'> */}
                 <Widget className='flex flex-col'>
                     <section className={cn('flex items-center justify-between py-2')}>
-                        <Typography variant='h3' className='text-base-h3 font-normal !text-text-light'>
+                        <Typography variant='h3' className='cursor-default text-base-h3 font-normal !text-text-light'>
                             To-Do List
                         </Typography>
 

@@ -28,9 +28,12 @@ export function Message({ message, iAmSender, showDate }: IProps) {
 
             <div className={cn('w-fit', { 'ml-auto': iAmSender })}>
                 <Letter
-                    className={cn('w-fit max-w-[701] rounded-base-x2 bg-surface-inactive p-2 text-black', {
-                        'bg-message-outcoming': iAmSender
-                    })}
+                    className={cn(
+                        'w-fit max-w-[701] cursor-default rounded-base-x2 bg-surface-inactive p-2 text-black',
+                        {
+                            'bg-message-outcoming': iAmSender
+                        }
+                    )}
                     html={message.html ?? message.plain ?? (message.metadata.snippet as string) ?? ''}
                 />
                 <Typography variant='body' className={cn('pl-base-x2 pr-base-x2 text-text-light')}>

@@ -13,7 +13,7 @@ interface IProps {
 export function Header({ title, counter }: IProps) {
     return (
         <header
-            className={cn('flex items-center py-2', {
+            className={cn('flex cursor-default items-center py-2', {
                 'justify-between': counter?.subject === 'new'
             })}
         >
