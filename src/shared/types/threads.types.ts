@@ -1,4 +1,4 @@
-import { IMessage, IMessageMetadata } from "./messages.types"
+import { IMessage, IMessageMetadata } from './messages.types'
 
 // * Threads
 export interface IThread {
@@ -14,7 +14,6 @@ export interface IDraft {
     id: string
     message: IMessage
 }
-
 
 export type TThreadLabels = 'INBOX' | 'SPAM' | 'TRASH' | 'UNREAD' | 'STARRED' | 'IMPORTANT' | 'SENT' | 'DRAFT' | 'NEW'
 export interface IUpdateLabelsData {
@@ -72,12 +71,14 @@ export interface IDraftResponse {
     }
 }
 
-
 // * Generate Message
+export type TTonality = 'FRIENDLY' | 'NEUTRAL' | 'PROFESSIONAL' | 'FORMAL'
+export type TMaxWords = 50 | 150 | 300 | 500
+
 export interface ISendGenerateMessage {
     prompt: string
-    length: EMessageGenerateLength | string
-    style: EMessageGenerateStyle | string
+    max_words: TMaxWords
+    tonality: TTonality
     msgs_ids?: number[]
 }
 export interface ISendGenerateMessageResponse {
