@@ -2,9 +2,8 @@ import { format } from 'date-fns'
 import dynamic from 'next/dynamic'
 
 import { Typography, UserAvatar } from '@/shared/components'
+import { IMessage } from '@/shared/types'
 import { cn } from '@/shared/utils'
-
-import { IMessage } from '@/enitites/types'
 
 interface IProps {
     message: IMessage
