@@ -5,26 +5,16 @@ import { MoveDown, MoveUp, Wand2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useWindowSize } from 'react-use'
-import { z } from 'zod'
 
-import { Button, Form, FormControl, FormField, FormItem, Hint, Input, Slider, Typography } from '@/shared/components'
-import { useTextSize } from '@/shared/hooks'
+import { Button, ChangeTextSize, Form, FormControl, FormField, FormItem, Hint, Input } from '@/shared/components'
 import { useStore } from '@/shared/libs'
 import { cn } from '@/shared/utils'
 
-export const generateComposeFormSchema = z.object({
-    prompt: z.string().min(1),
-    max_words: z.number().default(0),
-    tonality: z.number().default(0)
-})
-
-export type TGenerateComposeFormSchema = z.infer<typeof generateComposeFormSchema>
-
-const tonality = ['FRIENDLY', 'NEUTRAL', 'PROFESSIONAL', 'FORMAL']
-const maxWords = [50, 150, 300, 500]
+import { TGenerateComposeFormSchema, generateComposeFormSchema, maxWords, tonality } from './forms'
+import { RangeSlider } from './ui'
 
 export function GenerateMessage() {
-    const generateComposeForm = useForm<TGenerateComposeFormSchema>({
+    const form = useForm<TGenerateComposeFormSchema>({
         resolver: zodResolver(generateComposeFormSchema),
         defaultValues: {
             prompt: '',
@@ -33,31 +23,24 @@ export function GenerateMessage() {
         }
     })
 
-    const { showChatCompose, setShowChatCompose } = useStore()
-
     const { width } = useWindowSize()
-    const { textSize, large, small } = useTextSize()
     const [isEmptyGeneratePromptField, setIsEmptyGeneratePromptField] = useState<boolean>(false)
 
-    function changeTextSise(textSize: 'large' | 'small') {
-        textSize === 'large' && large()
-        textSize === 'small' && small()
-        // tagManageClick(`compose_text_size_${textSize}`)
-    }
+    const { showChatCompose, setShowChatCompose } = useStore()
 
     useEffect(() => {
-        const { dirtyFields } = generateComposeForm.formState
+        const { dirtyFields } = form.formState
 
         const isPromptValid = dirtyFields.prompt
 
         isPromptValid && setIsEmptyGeneratePromptField(false)
 
         isEmptyGeneratePromptField && setTimeout(() => setIsEmptyGeneratePromptField(false), 3000)
-    }, [generateComposeForm.formState, isEmptyGeneratePromptField])
+    }, [form.formState, isEmptyGeneratePromptField])
 
     function generateComposeMessage() {
-        const { dirtyFields } = generateComposeForm.formState
-        const values = generateComposeForm.getValues()
+        const { dirtyFields } = form.formState
+        const values = form.getValues()
 
         const isPromptValid = dirtyFields.prompt
 
@@ -80,72 +63,40 @@ export function GenerateMessage() {
         // setChatType(type)
     }
     return (
-        <Form {...generateComposeForm}>
+        <Form {...form}>
             <form className='flex flex-col gap-1'>
                 <div className='flex h-9 w-full items-center justify-between'>
                     <div className='flex h-9 gap-4'>
                         <FormField
-                            control={generateComposeForm.control}
+                            control={form.control}
                             name='max_words'
                             render={({ field }) => (
                                 <FormItem className='flex w-full min-w-[132px] max-w-[132px] flex-col items-center'>
                                     <FormControl className='m-auto w-full'>
-                                        <div className='flex flex-col gap-1'>
-                                            <div className='flex w-full justify-between'>
-                                                <span className='text-base-body5 font-medium text-text-ultra-light'>
-                                                    Short
-                                                </span>
-                                                <span className='text-base-body5 font-medium text-text-ultra-light'>
-                                                    Long
-                                                </span>
-                                            </div>
-                                            <div className='relative'>
-                                                <Slider
-                                                    {...field}
-                                                    defaultValue={[0]}
-                                                    max={3}
-                                                    min={0}
-                                                    step={1}
-                                                    value={[field.value]}
-                                                    onValueChange={(value: number[]) => (
-                                                        field.onChange(value), console.log(value)
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
+                                        <RangeSlider
+                                            {...field}
+                                            labelFrom='Short'
+                                            labelTo='Long'
+                                            value={[field.value]}
+                                            onChange={field.onChange}
+                                        />
                                     </FormControl>
                                 </FormItem>
                             )}
                         />
                         <FormField
-                            control={generateComposeForm.control}
+                            control={form.control}
                             name='tonality'
                             render={({ field }) => (
                                 <FormItem className='flex w-full min-w-[132px] max-w-[132px] flex-col items-center'>
                                     <FormControl className='m-auto w-full'>
-                                        <div className='flex flex-col gap-1'>
-                                            <div className='flex w-full justify-between'>
-                                                <span className='text-base-body5 font-medium text-text-ultra-light'>
-                                                    Friendly
-                                                </span>
-                                                <span className='text-base-body5 font-medium text-text-ultra-light'>
-                                                    Professional
-                                                </span>
-                                            </div>
-                                            <div className='relative'>
-                                                <Slider
-                                                    {...field}
-                                                    defaultValue={[0]}
-                                                    max={3}
-                                                    min={0}
-                                                    step={1}
-                                                    value={[field.value]}
-                                                    onValueChange={(value: number[]) => (
-                                                        field.onChange(value), console.log(value)
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
+                                        <RangeSlider
+                                            {...field}
+                                            labelFrom='Friendly'
+                                            labelTo='Professional'
+                                            value={[field.value]}
+                                            onChange={field.onChange}
+                                        />
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -153,40 +104,7 @@ export function GenerateMessage() {
                     </div>
 
                     <div className='flex gap-4'>
-                        {width > 1440 && (
-                            <div className='flex gap-2'>
-                                <Hint side='top' label='Small' asChild>
-                                    <Button
-                                        variant='clear'
-                                        size='clear'
-                                        onClick={() => changeTextSise('small')}
-                                        className={cn(
-                                            'flex h-[36px] w-[36px] items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out',
-                                            { 'bg-surface-hover': textSize === 'small' }
-                                        )}
-                                    >
-                                        <Typography variant='body' className='!text-base-body2 font-normal text-black'>
-                                            Aa
-                                        </Typography>
-                                    </Button>
-                                </Hint>
-                                <Hint side='top' label='Large' asChild>
-                                    <Button
-                                        variant='clear'
-                                        size='clear'
-                                        onClick={() => changeTextSise('large')}
-                                        className={cn(
-                                            'flex h-[36px] w-[36px] items-center justify-center rounded-base-x2 transition-all duration-300 ease-in-out',
-                                            { 'bg-surface-hover': textSize === 'large' }
-                                        )}
-                                    >
-                                        <Typography variant='h4' className='font-normal !text-black'>
-                                            Aa
-                                        </Typography>
-                                    </Button>
-                                </Hint>
-                            </div>
-                        )}
+                        {width > 1440 && <ChangeTextSize />}
                         <Hint side='top' label={showChatCompose === 'max' ? 'Minimize' : 'Expand'} asChild>
                             <Button
                                 variant='clear'
@@ -205,7 +123,7 @@ export function GenerateMessage() {
                 </div>
 
                 <FormField
-                    control={generateComposeForm.control}
+                    control={form.control}
                     name='prompt'
                     render={({ field }) => (
                         <FormItem className='flex w-full flex-col items-center'>
