@@ -1,6 +1,7 @@
 export * from './Avatar'
 export * from './Button'
 export * from './Calendar'
+export * from './Checkbox'
 export * from './DatePicker'
 export * from './Form'
 export * from './Input'
