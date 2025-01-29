@@ -16,16 +16,17 @@ import {
     Trash2
 } from 'lucide-react'
 import Link from 'next/link'
-import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useMemo, useState } from 'react'
-import { useLocation, useSearchParam, useSet } from 'react-use'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
+import { useSet } from 'react-use'
 
-import { Button, Checkbox, Hint, SearchInput, Typography } from '@/shared/components'
+import { Button, Checkbox, Hint, SearchInput, Separator, Typography } from '@/shared/components'
 import { paths } from '@/shared/config'
 import { EFilterOptions, EThreadLabels } from '@/shared/types'
 import { cn } from '@/shared/utils'
 
 import { THREADS } from '@/enitites/api'
+import { Chat } from '@/widgets'
 
 function Mailbox() {
     const navbar = useMemo(
@@ -109,7 +110,7 @@ function Mailbox() {
             <aside className='flex flex-col justify-start gap-2 border-r border-divider px-2 pb-6 pt-3'>
                 <Typography
                     variant='body'
-                    className='flex max-h-[38px] w-full flex-1 items-center justify-center text-text-ultra-light'
+                    className='flex max-h-[38px] w-full flex-1 items-center justify-center !text-text-ultra-light'
                 >
                     {format(new Date(), 'dd MMMM yyy')}
                 </Typography>
@@ -121,7 +122,7 @@ function Mailbox() {
                                 <Link
                                     href={item.path}
                                     className={cn(
-                                        'group relative flex items-center justify-between gap-2 rounded-lg px-3 py-3 pr-2 transition-all duration-300 ease-in-out hover:bg-surface-hover hover:pl-4',
+                                        'group relative flex h-[44px] items-center justify-between gap-2 rounded-lg px-3 pr-2 transition-all duration-300 ease-in-out hover:bg-surface-hover hover:pl-4',
                                         {
                                             'cursor-default bg-surface-hover pl-4 hover:bg-surface-hover': isActive
                                         }
@@ -176,7 +177,7 @@ function Mailbox() {
                                 onClick={markAllAsDoneThreadsHandler}
                                 className='pl-4 pr-10 text-button hover:text-button-hover'
                             >
-                                Mark all as done
+                                <Typography variant='body'>Mark all as done</Typography>
                             </Button>
                         )}
                         {!isNew && (
@@ -309,9 +310,10 @@ function Mailbox() {
                             Compose
                         </Button> */}
                 </header>
-                <section className='flex flex-1 border-t border-divider bg-green-500'>
-                    <section className='w-full border-r-2 border-black bg-orange-500'>THREADS</section>
-                    <section className='w-full bg-sky-500'>CHAT</section>
+                <section className='flex overflow-hidden border-t border-divider'>
+                    <section className='w-full'>THREADS</section>
+                    <Separator orientation='vertical' className='mt-2 border border-black' />
+                    <Chat useHeader useMenu />
                 </section>
             </section>
         </div>

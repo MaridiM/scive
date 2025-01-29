@@ -18,7 +18,8 @@ export function WidgetHeader({ title, counter, filter, pagination, className }: 
             className={cn(
                 'flex cursor-default items-center py-2',
                 {
-                    'justify-between': counter?.subject === 'new' || filter || pagination
+                    'justify-between': counter?.subject === 'new' || filter || pagination,
+                    'border-b border-divider': pagination
                 },
                 className
             )}
