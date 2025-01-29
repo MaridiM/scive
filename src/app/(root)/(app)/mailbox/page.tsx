@@ -1,5 +1,11 @@
+import { Suspense } from 'react'
+
 import { MailboxScreen } from '@/screens'
 
 export default function Mailbox() {
-    return <MailboxScreen />
+    return (
+        <Suspense>
+            <MailboxScreen />
+        </Suspense>
+    )
 }

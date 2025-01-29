@@ -5,7 +5,7 @@ import { ElementType, PropsWithChildren } from 'react'
 import { useTextSize } from '@/shared/hooks'
 import { cn } from '@/shared/utils'
 
-import { ITypographyProps, TTextType, TVariant } from './Typography.types'
+import type { ITypographyProps, TTextType, TVariant } from './Typography.types'
 
 export function Typography({
     variant = 'body',

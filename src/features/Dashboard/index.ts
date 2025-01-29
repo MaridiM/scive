@@ -1,2 +1,3 @@
-export * from './Dashboard.types'
-export * from './Header'
+export * from './WidgetHeader/types'
+export * from './Digest'
+export * from './WidgetHeader'
