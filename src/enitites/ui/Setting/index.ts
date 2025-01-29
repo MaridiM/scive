@@ -1,1 +1,1 @@
-// import * from './Header'
+export * from './SettingsHeader'

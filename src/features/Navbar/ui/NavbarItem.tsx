@@ -1,50 +1,73 @@
 'use client'
 import { Typography } from "@/shared/components"
-import { paths } from "@/shared/config"
-import { LucideProps, Settings } from "lucide-react"
+import { cn } from "@/shared/utils"
+import { LucideProps } from "lucide-react"
 import Link from "next/link"
-import { usePathname, useSearchParams } from "next/navigation"
 import { FC, ForwardRefExoticComponent, RefAttributes } from "react"
-import { useSearchParam } from "react-use"
+
 
 
 interface INavbarItem {
     title?: string
     icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>
 	path: string 
-	// isRedCounter?: boolean
-	// countUnread?: number
-	// disabled?: boolean
-    
 }
 
 export interface INavbarItemProps {
     navItem: INavbarItem
-    
-    // title: string
-    // path: string
-    
+    isActive: boolean
 }
 
-export const NavbarItem:FC<INavbarItemProps>=({navItem})=>{
+export const NavbarItem:FC<INavbarItemProps>=({navItem, isActive})=>{
     const { title, icon:Icon , path} = navItem
-    // const searchParams = useSearchParams()
-    // console.log('searchParam', searchParams)
-    // console.log('path', path)
-    // // const isActive = path === searchParam
-
-    // const search = searchParams.get('path')
-    // console.log('href', href)
     
+   
     return(
-        <div className='bg-slate-400 w-[220px] flex-row py-1 px-2 justify-between items-center rounded-base-x2 mb-2'>
-        {/* <Link href={paths.settings()} className='flex '> */}
-        <Link href={path} className='flex '>
-        <Icon width='35px'
-         height='35px' className='flex p-2 justify-between items-center  '/>
-        <Typography 
-        className='flex text-base-h4 justify-between items-center '>{title}</Typography>
-       </Link>
-        </div>
+    <li>
+    <Link
+        href={path}
+        className={cn(
+            'group relative flex items-center justify-between gap-2 rounded-lg px-3 py-3 pr-2 transition-all duration-300 ease-in-out hover:bg-surface-hover hover:pl-4',
+            {
+                'cursor-default bg-surface-hover pl-4 hover:bg-surface-hover': isActive
+            }
+        )}
+    >
+        <span
+            className={cn(
+                'absolute left-0 h-6 w-1.5 rounded-lg bg-transparent transition-all duration-300 ease-in-out',
+                {
+                    'bg-primary': isActive
+                }
+            )}
+        />
+        <Typography
+            variant='body-list'
+            className={cn(
+                'flex items-center gap-3 !text-text-bold' /*{ 'text-button-disabled': item.disabled }*/
+            )}
+        >
+            <Icon
+                size={20}
+                className={cn(
+                    'stroke-[1.5px] text-black' /*{'text-text-disabled': item.disabled } */
+                )}
+            />
+            {title}
+        </Typography>
+        {/* {item.countUnread && (
+            <Typography
+                variant='label-date'
+                className={cn(
+                    '!text-light-text flex h-base-x4 min-w-[16px] items-center justify-center rounded-base-x4 bg-surface-over-hover pl-[2px] pr-[2px]',
+                    { 'bg-red-400 !text-white': item.isRedCounter }
+                )}
+            >
+                {item.countUnread}
+            </Typography>
+        )} */}
+    </Link>
+    </li>
+
     )
 }
