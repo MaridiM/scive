@@ -30,9 +30,9 @@ export const Navbar: FC<IProps> = ({ title, navbar, path }) => {
     }, [path, router])
  
     return (
-        <div className={cn('border-r-[1px] px-2 py-2')}>
+        <div className={cn('border-r-[1px] px-2 py-2 text-base-h3 text-gray-900')}>
             {title ? (
-                <div className='text-base-h3 mb-4 ml-1'>{title}</div>
+                <Typography className=' flex text-base-h3 mb-4 ml-1'>{title}</Typography>
             ) : (
                 <Typography>{format(new Date(), 'dd MMMM yyy')}</Typography>
             )}

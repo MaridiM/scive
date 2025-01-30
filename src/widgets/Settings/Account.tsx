@@ -1,7 +1,6 @@
 import { avatarImage } from '@/shared/assets'
 import { ChangeTextSize, Typography, UserAvatar } from '@/shared/components'
 
-// }
 export const Account = () => {
     const user = {
         user: 'hanna@scive.ai'
@@ -13,9 +12,9 @@ export const Account = () => {
                 <div className='w-[416px] rounded-base-x4 bg-gray-100 p-2'>
                     <UserAvatar size={'lg'} src={avatarImage.src} username={'user.user'} />
                 </div>
-                <Typography variant='body'>
-                    Current plan: <Typography className='font-bold'>Basic</Typography>, active till{' '}
-                    <Typography className='font-bold text-sky'>09.27.2023</Typography>
+                <Typography variant='body' className='text-base-body text-gray-900'>
+                    Current plan: <Typography className='text-base-body font-bold'>Basic</Typography>, active till{' '}
+                    <Typography className='text-base-body font-bold text-sky-400'>09.27.2023</Typography>
                 </Typography>
             </div>
             <div className='mt-[64px] flex w-[416px] justify-between'>

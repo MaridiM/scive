@@ -27,7 +27,7 @@ export const NavbarItem:FC<INavbarItemProps>=({navItem, isActive})=>{
     <Link
         href={path}
         className={cn(
-            'group relative flex items-center justify-between gap-2 rounded-lg px-3 py-3 pr-2 transition-all duration-300 ease-in-out hover:bg-surface-hover hover:pl-4',
+            'group relative flex items-center justify-between gap-2 rounded-lg px-3 py-2 pr-2 transition-all duration-300 ease-in-out hover:bg-surface-hover hover:pl-4',
             {
                 'cursor-default bg-surface-hover pl-4 hover:bg-surface-hover': isActive
             }
@@ -44,7 +44,7 @@ export const NavbarItem:FC<INavbarItemProps>=({navItem, isActive})=>{
         <Typography
             variant='body-list'
             className={cn(
-                'flex items-center gap-3 !text-text-bold' /*{ 'text-button-disabled': item.disabled }*/
+                'flex items-center gap-3 text-base-body' /*{ 'text-button-disabled': item.disabled }*/
             )}
         >
             <Icon

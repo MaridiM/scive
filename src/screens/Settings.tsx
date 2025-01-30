@@ -2,12 +2,12 @@
 
 import { Banknote, Bell, Trophy, User2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import { FC, Suspense, useMemo } from 'react'
+import { FC, Suspense, useMemo, useState } from 'react'
 import { Billing } from '@/widgets/Settings/Billing'
 import { paths } from '@/shared/config'
 import { SettingsHeader } from '@/enitites/ui/Setting/SettingsHeader'
 import { Navbar } from '@/features'
-import { Account, Plane } from '@/widgets'
+import { Account, Plane, TPlans } from '@/widgets'
 
 
 
@@ -36,9 +36,9 @@ const Settings: FC = () => {
                 <Navbar navbar={navbar} title='Settings' path={searchParams.get('path')} />
             </Suspense>
              <section className='flex flex-col gap-2 overflow-hidden border-l border-divider px-1 pb-6 pt-3'>
-                <SettingsHeader  />
+                <SettingsHeader/>
                 {searchParams.get('path') === 'account' && <Account />}
-                {searchParams.get('path') === 'plans' && <Plane/>}
+                {searchParams.get('path') === 'plans' && <Plane />}
                 {searchParams.get('path') === 'billings' && <Billing />}
             </section>
         </div>
