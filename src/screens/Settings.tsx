@@ -2,12 +2,12 @@
 
 import { Banknote, Bell, Trophy, User2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import { FC, Suspense, useMemo, useState } from 'react'
+import { FC, Suspense, useMemo} from 'react'
 import { Billing } from '@/widgets/Settings/Billing'
 import { paths } from '@/shared/config'
 import { SettingsHeader } from '@/enitites/ui/Setting/SettingsHeader'
 import { Navbar } from '@/features'
-import { Account, Plane, TPlans } from '@/widgets'
+import { Account, Plane} from '@/widgets'
 
 
 

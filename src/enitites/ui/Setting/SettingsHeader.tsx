@@ -1,6 +1,6 @@
-import { LogOut, LucideProps } from 'lucide-react'
+import { LogOut} from 'lucide-react'
 import { Button, Typography } from '@/shared/components'
-import { FC, ForwardRefExoticComponent, RefAttributes } from 'react'
+
 
 
 export interface IPropsHeader{

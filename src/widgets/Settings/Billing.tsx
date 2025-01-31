@@ -1,4 +1,4 @@
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Typography } from '@/shared/components'
+import { Button, Table, TableBody, TableCell,TableRow, Typography } from '@/shared/components'
 import { cn } from '@/shared/utils'
 
 export const Billing = () => {

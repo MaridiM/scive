@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns'
 import { LucideProps } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter} from 'next/navigation'
 import { FC, ForwardRefExoticComponent, RefAttributes, useEffect } from 'react'
 import { Typography } from '@/shared/components'
 import { paths } from '@/shared/config'

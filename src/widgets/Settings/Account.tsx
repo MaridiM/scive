@@ -2,9 +2,7 @@ import { avatarImage } from '@/shared/assets'
 import { ChangeTextSize, Typography, UserAvatar } from '@/shared/components'
 
 export const Account = () => {
-    const user = {
-        user: 'hanna@scive.ai'
-    }
+   
 
     return (
         <div className='ml-[44px] flex-col pt-[20px]' style={{ gap: 64 }}>
