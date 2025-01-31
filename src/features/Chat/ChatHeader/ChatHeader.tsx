@@ -1,16 +1,18 @@
 'use client'
 
 import { format } from 'date-fns'
+import { AlertOctagon, MoreVertical, ReplyAll, Trash2 } from 'lucide-react'
 import { PropsWithChildren, useState } from 'react'
 
-import { Button, Hint, Typography } from '@/shared/components'
+import { Button, Hint, Menu, Typography } from '@/shared/components'
 import { IThread } from '@/shared/types'
 
 interface IProps {
     thread: IThread
+    useMenu?: boolean
 }
 
-export function ChatHeader({ children, thread }: PropsWithChildren<IProps>) {
+export function ChatHeader({ children, thread, useMenu }: PropsWithChildren<IProps>) {
     const [isImportant, setIsImportant] = useState(false)
 
     const threadMessages = thread.messages[0]
@@ -23,16 +25,20 @@ export function ChatHeader({ children, thread }: PropsWithChildren<IProps>) {
         // tagManageClick('thread_important_dashboard')
     }
 
+    function menuHandler(option: string) {
+        console.log(option)
+    }
+
     const tooltipContent = isImportant
         ? 'Click to teach Scive this conversation is not important'
         : 'Click to teach Scive this conversation is important'
     return (
         <header className='w-full border-b border-divider'>
             {children}
-            <div className='flex h-[47px] w-full items-center gap-4 border-y border-divider pl-5 pr-8'>
+            <div className='flex h-[47px] w-full items-center gap-4 border-b border-divider pl-5 pr-8'>
                 <Hint side='top' label={titleName} asChild>
                     <Typography
-                        variant='button-default'
+                        variant='body-bold'
                         className='relative cursor-default !font-bold !text-text-bold'
                         nowrap
                     >
@@ -63,6 +69,18 @@ export function ChatHeader({ children, thread }: PropsWithChildren<IProps>) {
                         </svg>
                     </Button>
                 </Hint>
+                {useMenu && (
+                    <Hint side='top' label={'More options'} asChild>
+                        <Menu
+                            options={[
+                                { icon: ReplyAll, text: 'Forward all', reverseIcon: true },
+                                { icon: AlertOctagon, text: 'Report spam' },
+                                { icon: Trash2, text: 'Delete' }
+                            ]}
+                            onClick={menuHandler}
+                        />
+                    </Hint>
+                )}
             </div>
         </header>
     )
