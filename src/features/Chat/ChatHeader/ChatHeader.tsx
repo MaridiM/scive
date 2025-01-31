@@ -6,6 +6,7 @@ import { PropsWithChildren, useState } from 'react'
 
 import { Button, Hint, Menu, Typography } from '@/shared/components'
 import { IThread } from '@/shared/types'
+import { formattedDate } from '@/shared/utils'
 
 interface IProps {
     thread: IThread
@@ -51,7 +52,7 @@ export function ChatHeader({ children, thread, useMenu }: PropsWithChildren<IPro
                     </Typography>
                 </Hint>
                 <Typography variant='label-date' className='!text-normal ml-auto min-w-fit cursor-default !text-black'>
-                    {format(threadMessages.metadata.created_at || '', 'MMM d')}
+                    {formattedDate(threadMessages.metadata.created_at ?? '')}
                 </Typography>
             </div>
             <div className='flex h-[47px] w-full items-center gap-4 px-5'>

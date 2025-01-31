@@ -18,17 +18,17 @@ import {
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
-import { useSet } from 'react-use'
+import { useKey, useSet } from 'react-use'
 
 import { Button, Checkbox, Hint, SearchInput, Separator, Typography } from '@/shared/components'
 import { paths } from '@/shared/config'
-import { EFilterOptions, EThreadLabels } from '@/shared/types'
+import { EFilterOptions, EThreadLabels, IThread } from '@/shared/types'
 import { cn } from '@/shared/utils'
+import { formattedDate } from '@/shared/utils'
 
 import { THREADS } from '@/enitites/api'
-import { Chat } from '@/widgets'
 
-function Mailbox() {
+export default function Mailbox() {
     const navbar = useMemo(
         () => [
             { icon: BellDot, title: 'New', path: paths.mailbox('new'), countUnread: 12 },
@@ -49,16 +49,42 @@ function Mailbox() {
 
     const searchParam = useSearchParams()
     const router = useRouter()
-    const [selectedThreadsIds, { add, has, remove }] = useSet<string>(new Set(['1948978bdb0165a9', '19485e8ece2aa07a']))
+    const [
+        selectedThreadsIds,
+        { add: selesctThread, has: isSelected, remove: unselectedThread, clear: clearSelectedThreads }
+    ] = useSet<string>(new Set([]))
     const [selectedCheckState, setSelectedCheckState] = useState<'all' | 'some' | null>(null)
+
+    const [isImportant, setIsImportant] = useState(false)
+    const [currentThread, setCurrentThread] = useState<IThread | null>(null)
 
     useEffect(() => {
         setSelectedCheckState(
             selectedThreadsIds.size === THREADS.length ? 'all' : selectedThreadsIds.size ? 'some' : null
         )
-    }, [selectedThreadsIds.size, THREADS.length])
+    }, [selectedThreadsIds.size, THREADS.length, selectedCheckState])
+
+    useEffect(() => {
+        !searchParam.get('label') && router.push(paths.mailbox('new'))
+        searchParam.get('label')?.includes('trash') && router.push(paths.mailbox('trash'))
+    }, [searchParam, router])
+
     function onCheckedHandler() {
-        setSelectedCheckState('all')
+        if (selectedCheckState === 'some' || selectedCheckState === 'all') {
+            clearSelectedThreads()
+            setSelectedCheckState(null)
+        }
+
+        if (!selectedCheckState) {
+            setSelectedCheckState('all')
+            THREADS.map(thread => {
+                if (!isSelected(thread.id)) {
+                    selesctThread(thread.id)
+                } else {
+                    unselectedThread(thread.id)
+                }
+            })
+        }
         // tagManageClick('select_all_inbox')
     }
 
@@ -89,14 +115,8 @@ function Mailbox() {
         // fetchThreads()
     }
 
-    useEffect(() => {
-        !searchParam.get('label') && router.push(paths.mailbox('new'))
-        searchParam.get('label')?.includes('trash') && router.push(paths.mailbox('trash'))
-    }, [searchParam, router])
-
     const unreadThreads = false
     const showCompose = false
-    const selectedThreads = THREADS
 
     const label = searchParam.get('label') ?? 'new'
 
@@ -104,6 +124,59 @@ function Mailbox() {
     const isSent = label === 'sent'
     const isSpam = label === 'spam'
     const isTrash = label === 'trash'
+
+    function selectThreadItemByCheckboxHandler(threadId: IThread['id']) {
+        if (isSelected(threadId)) {
+            unselectedThread(threadId)
+            return
+        }
+        selesctThread(threadId)
+    }
+
+    const tooltipContent = isImportant
+        ? 'Click to teach Scive this conversation is not important'
+        : 'Click to teach Scive this conversation is important'
+
+    function isImportantThreadHandler() {
+        setIsImportant(!isImportant)
+        // tagManageClick('thread_important_dashboard')
+    }
+
+    function selectThreadItemHandler(threadId: IThread['id']) {
+        const foundThread = THREADS.find(thread => thread.id === threadId)
+        if (!foundThread) {
+            setCurrentThread(null)
+            return
+        }
+        setCurrentThread(foundThread)
+
+        // tagManageClick('thread_important_dashboard')
+    }
+
+    const [isPressedControl, setIsPressedControl] = useState(false)
+
+    function selectThreadItemByKeysHandler(threadId: IThread['id']) {
+        if (isSelected(threadId)) {
+            unselectedThread(threadId)
+            return
+        }
+        selesctThread(threadId)
+    }
+
+    function onKeyPress(e: KeyboardEvent) {
+        e.preventDefault()
+        setIsPressedControl(true)
+        setTimeout(() => {
+            setIsPressedControl(false)
+        }, 300)
+    }
+
+    function clearThreadsStates() {
+        clearSelectedThreads()
+        setCurrentThread(null)
+    }
+    useKey('Control', onKeyPress)
+    useKey('Escape', clearThreadsStates)
 
     return (
         <div className='grid w-full grid-cols-[220px_auto] gap-1 overflow-hidden'>
@@ -299,24 +372,115 @@ function Mailbox() {
                         />
                         Compose
                     </Button>
-                    {/* <Button
-                            disabled={showCompose}
-                            className={cn(
-                                'mr-6 h-9 rounded-base-x3 bg-sky pl-base-x3 pr-base-x4',
-                                showCompose && bg.inactiveSurface
-                            )}
-                            classNameText={cn(showCompose ? text.disabledText : text.white)}
-                        >
-                            Compose
-                        </Button> */}
                 </header>
                 <section className='flex overflow-hidden border-t border-divider'>
-                    <section className='w-full'>THREADS</section>
+                    <ul className='flex w-full flex-col gap-0.5 overflow-y-auto py-2 pr-1'>
+                        {THREADS.map(thread => {
+                            const metadata = thread.messages[0].metadata
+                            const lastThreadMetadata = thread.messages[thread.messages.length - 1].metadata
+                            const isActiveThread = currentThread?.id === thread.id
+
+                            const isUnreadThread = thread.messages.filter(message => {
+                                const unreadLabels = []
+                                const labels = message.metadata.labels
+
+                                if (labels.includes(EThreadLabels.UNREAD)) {
+                                    unreadLabels.push(EThreadLabels.UNREAD)
+                                }
+
+                                return Boolean(unreadLabels.length)
+                            })
+
+                            return (
+                                <li
+                                    key={thread.id}
+                                    className='flex min-h-12 w-full gap-2 pl-2 pr-1'
+                                    onClick={
+                                        isPressedControl ? () => selectThreadItemByKeysHandler(thread.id) : undefined
+                                    }
+                                >
+                                    <ul
+                                        className={cn(
+                                            'flex h-12 w-full cursor-default items-center gap-2 rounded transition-all duration-300 ease-in-out hover:bg-surface-hover',
+                                            {
+                                                'bg-mail-selected hover:bg-message-outcoming': isActiveThread,
+                                                'bg-surface-hover hover:bg-surface-hover': isSelected(thread.id),
+                                                'bg-message-outcoming hover:bg-mail-selected':
+                                                    isActiveThread && isSelected(thread.id)
+                                            }
+                                        )}
+                                    >
+                                        <li className='flex h-12 min-w-9 max-w-9 items-center justify-center'>
+                                            <Checkbox
+                                                checked={isSelected(thread.id)}
+                                                onCheckedChange={() => selectThreadItemByCheckboxHandler(thread.id)}
+                                            />
+                                        </li>
+                                        <li className='flex h-12 min-w-9 max-w-9 items-center justify-center'>
+                                            <Hint side='top' label={tooltipContent} asChild>
+                                                <Button
+                                                    variant='clear'
+                                                    size='clear'
+                                                    className='h-full w-12'
+                                                    onClick={isImportantThreadHandler}
+                                                >
+                                                    <svg
+                                                        xmlns='http://www.w3.org/2000/svg'
+                                                        width='15'
+                                                        height='14'
+                                                        viewBox='0 0 15 14'
+                                                        fill='none'
+                                                    >
+                                                        <path
+                                                            d='M3.50749 6.47364L0.444886 1.52635C0.0324821 0.860163 0.511644 0 1.29515 0H9.29817C9.63252 0 9.94475 0.1671 10.1302 0.445298L14.1302 6.4453C14.3542 6.7812 14.3542 7.2188 14.1302 7.5547L10.1302 13.5547C9.94475 13.8329 9.63252 14 9.29817 14H1.29515C0.511642 14 0.0324822 13.1398 0.444886 12.4736L3.50749 7.52635C3.70714 7.20385 3.70714 6.79615 3.50749 6.47364Z'
+                                                            fill={isImportant ? '#FDBA74' : '#D1D5DB'}
+                                                        />
+                                                    </svg>
+                                                </Button>
+                                            </Hint>
+                                        </li>
+                                        <li
+                                            className='flex w-[calc(100%-152px)] items-center gap-2'
+                                            onClick={() => selectThreadItemHandler(thread.id)}
+                                        >
+                                            <Typography
+                                                nowrap
+                                                variant={isUnreadThread ? 'label-date-bold' : 'body'}
+                                                className='!text-text-black max-w-[150px] text-base-h4'
+                                            >
+                                                {metadata?.from_}
+                                            </Typography>
+
+                                            <Typography
+                                                nowrap
+                                                variant={isUnreadThread ? 'label-date-bold' : 'body'}
+                                                className='!text-text-black text-base-h4'
+                                            >
+                                                {metadata?.subject}
+                                            </Typography>
+
+                                            <Separator className='h-[1px] w-3 border border-black' />
+
+                                            <Typography nowrap variant='body' className='!text-text-black'>
+                                                {lastThreadMetadata.snippet}
+                                            </Typography>
+                                        </li>
+                                        <li className='flex min-w-14 items-center justify-center'>
+                                            <Typography nowrap variant='label-date' className='!text-text-black'>
+                                                {formattedDate(lastThreadMetadata.created_at ?? '')}
+                                            </Typography>
+                                        </li>
+                                    </ul>
+                                </li>
+                            )
+                        })}
+                    </ul>
+
                     <Separator orientation='vertical' className='mt-2 border border-black' />
-                    <Chat useHeader useMenu />
+
+                    {/* <Chat useHeader useMenu /> */}
                 </section>
             </section>
         </div>
     )
 }
-export default Mailbox
