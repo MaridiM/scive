@@ -28,7 +28,17 @@ const Settings: FC = () => {
             }
         ],
         []
+
+
     )
+
+    const settingTitles: Record<string, string> ={
+        account: 'Account' ,
+        billings:'Billing',
+        plans:'Plan'
+    }
+
+
 
     return (
         <div className='grid w-full grid-cols-[220px_auto] gap-1 overflow-hidden'>
@@ -36,7 +46,7 @@ const Settings: FC = () => {
                 <Navbar navbar={navbar} title='Settings' path={searchParams.get('path')} />
             </Suspense>
              <section className='flex flex-col gap-2 overflow-hidden border-l border-divider px-1 pb-6 pt-3'>
-                <SettingsHeader/>
+                <SettingsHeader title={settingTitles[searchParams.get('path') ?? settingTitles.account ] }/>
                 {searchParams.get('path') === 'account' && <Account />}
                 {searchParams.get('path') === 'plans' && <Plane />}
                 {searchParams.get('path') === 'billings' && <Billing />}

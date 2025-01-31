@@ -110,11 +110,11 @@ export const Billing = () => {
                 </Table>
             </div>
             <div className='flex items-baseline mt-5'>
-                <Typography variant='h4' className='mr-[16px] flex px-2 text-base-body font-semibold text-gray-400'>
+                <Typography variant='body' className='!font-semibold mr-[16px] flex px-2  text-gray-400'>
                     Payment method
                 </Typography>
                 <Button variant={'clear'} className='flex text-base-body text-sky-400'>
-                    <Typography variant='h4' className='hover:text-black'>
+                    <Typography variant='body' className='!font-bold hover:text-black'>
                         + Add new
                     </Typography>
                 </Button>

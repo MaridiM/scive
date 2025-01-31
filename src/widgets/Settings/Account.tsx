@@ -12,15 +12,15 @@ export const Account = () => {
                 <div className='w-[416px] rounded-base-x4 bg-gray-100 p-2'>
                     <UserAvatar size={'lg'} src={avatarImage.src} username={'user.user'} />
                 </div>
-                <Typography variant='body' className='text-base-body text-gray-900'>
-                    Current plan: <Typography className='text-base-body font-bold'>Basic</Typography>, active till{' '}
+                <Typography variant='body' className='!text-gray-900'>
+                    Current plan: <Typography variant='body' className='font-bold'>Basic</Typography>, active till{' '}
                     <Typography className='text-base-body font-bold text-sky-400'>09.27.2023</Typography>
                 </Typography>
             </div>
             <div className='mt-[64px] flex w-[416px] justify-between'>
                 <div className='mr-[20px] flex flex-col'>
                     <Typography variant='h4'>Font size</Typography>
-                    <Typography className='text-base-body4 text-gray-400'>
+                    <Typography variant='label-date'  className=' !text-gray-400'>
                         Available only for screens with a width of 1440 and more
                     </Typography>
                 </div>
