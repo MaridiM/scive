@@ -16,9 +16,9 @@ import {
     Trash2
 } from 'lucide-react'
 import Link from 'next/link'
-import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useMemo, useState } from 'react'
-import { useLocation, useSearchParam, useSet } from 'react-use'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
+import { useSet } from 'react-use'
 
 import { Button, Checkbox, Hint, SearchInput, Typography } from '@/shared/components'
 import { paths } from '@/shared/config'
