@@ -28,7 +28,7 @@ export const CardPlan: FC<IPlanCard> = ({ price, points, type }) => {
             {/* <Typography>{tooltip}</Typography> */}
             <ul className='mb-[36px]'>
                 {points.map((point, index) => (
-                    <li key={index} className='flex-column mb-4 flex'>
+                    <li key={index} className='flex-column mb-4 flex text-base-body2'>
                         <Check 
                             size={20}
                             className={cn(
@@ -39,8 +39,8 @@ export const CardPlan: FC<IPlanCard> = ({ price, points, type }) => {
                             )}
                         />
                         <Typography
-                            variant='subheadline'
-                            className={cn(
+                            variant='body'
+                            className={cn('text-base-body2',
                                 type === 'Standart' && 'text-gray-900',
                                 type === 'Plus' && 'text-gray-900',
                                 type === 'Pro' && 'text-white'
@@ -51,7 +51,7 @@ export const CardPlan: FC<IPlanCard> = ({ price, points, type }) => {
                     </li>
                 ))}
             </ul>
-            <Button variant={'clear'} className='m-auto flex'>
+            <Button variant={'clear'} className='m-auto '>
                 Active
             </Button>
         </div>
