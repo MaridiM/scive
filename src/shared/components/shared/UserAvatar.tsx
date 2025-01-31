@@ -7,8 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui'
 const avatarSizes = cva('', {
     variants: {
         size: {
-            default: 'w-base-x10 w-base-x10',
-            lg: 'w-base-x12 w-base-x12'
+            default: 'w-base-x10 h-base-x10',
+            lg: 'w-base-x12 h-base-x12'
         }
     },
     defaultVariants: {
